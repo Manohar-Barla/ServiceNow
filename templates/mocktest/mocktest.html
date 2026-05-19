@@ -821,14 +821,17 @@
     <!-- Javascript will dynamically add question ids and selected values here upon submit -->
 </form>
 
+<!-- Secure Django JSON Script Container to avoid IDE syntax warnings -->
+{{ question_ids|json_script:"question-ids-data" }}
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // State management variables
-    const questionIds = {{ question_ids|safe }};
-    const totalQuestions = {{ total_questions }};
-    const timerMins = {{ timer_minutes }};
+    // State management variables safely parsed to satisfy IDE code analysis
+    const questionIds = JSON.parse(document.getElementById('question-ids-data').textContent);
+    const totalQuestions = parseInt("{{ total_questions }}", 10);
+    const timerMins = parseInt("{{ timer_minutes }}", 10);
     
     let currentIndex = 0;
     
