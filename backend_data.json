@@ -1,619 +1,6 @@
 [
 {
-    "model": "auth.permission",
-    "pk": 1,
-    "fields": {
-        "name": "Can add log entry",
-        "content_type": 1,
-        "codename": "add_logentry"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 2,
-    "fields": {
-        "name": "Can change log entry",
-        "content_type": 1,
-        "codename": "change_logentry"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 3,
-    "fields": {
-        "name": "Can delete log entry",
-        "content_type": 1,
-        "codename": "delete_logentry"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 4,
-    "fields": {
-        "name": "Can view log entry",
-        "content_type": 1,
-        "codename": "view_logentry"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 5,
-    "fields": {
-        "name": "Can add permission",
-        "content_type": 2,
-        "codename": "add_permission"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 6,
-    "fields": {
-        "name": "Can change permission",
-        "content_type": 2,
-        "codename": "change_permission"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 7,
-    "fields": {
-        "name": "Can delete permission",
-        "content_type": 2,
-        "codename": "delete_permission"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 8,
-    "fields": {
-        "name": "Can view permission",
-        "content_type": 2,
-        "codename": "view_permission"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 9,
-    "fields": {
-        "name": "Can add group",
-        "content_type": 3,
-        "codename": "add_group"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 10,
-    "fields": {
-        "name": "Can change group",
-        "content_type": 3,
-        "codename": "change_group"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 11,
-    "fields": {
-        "name": "Can delete group",
-        "content_type": 3,
-        "codename": "delete_group"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 12,
-    "fields": {
-        "name": "Can view group",
-        "content_type": 3,
-        "codename": "view_group"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 13,
-    "fields": {
-        "name": "Can add user",
-        "content_type": 4,
-        "codename": "add_user"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 14,
-    "fields": {
-        "name": "Can change user",
-        "content_type": 4,
-        "codename": "change_user"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 15,
-    "fields": {
-        "name": "Can delete user",
-        "content_type": 4,
-        "codename": "delete_user"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 16,
-    "fields": {
-        "name": "Can view user",
-        "content_type": 4,
-        "codename": "view_user"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 17,
-    "fields": {
-        "name": "Can add content type",
-        "content_type": 5,
-        "codename": "add_contenttype"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 18,
-    "fields": {
-        "name": "Can change content type",
-        "content_type": 5,
-        "codename": "change_contenttype"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 19,
-    "fields": {
-        "name": "Can delete content type",
-        "content_type": 5,
-        "codename": "delete_contenttype"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 20,
-    "fields": {
-        "name": "Can view content type",
-        "content_type": 5,
-        "codename": "view_contenttype"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 21,
-    "fields": {
-        "name": "Can add session",
-        "content_type": 6,
-        "codename": "add_session"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 22,
-    "fields": {
-        "name": "Can change session",
-        "content_type": 6,
-        "codename": "change_session"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 23,
-    "fields": {
-        "name": "Can delete session",
-        "content_type": 6,
-        "codename": "delete_session"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 24,
-    "fields": {
-        "name": "Can view session",
-        "content_type": 6,
-        "codename": "view_session"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 25,
-    "fields": {
-        "name": "Can add domain",
-        "content_type": 7,
-        "codename": "add_domain"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 26,
-    "fields": {
-        "name": "Can change domain",
-        "content_type": 7,
-        "codename": "change_domain"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 27,
-    "fields": {
-        "name": "Can delete domain",
-        "content_type": 7,
-        "codename": "delete_domain"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 28,
-    "fields": {
-        "name": "Can view domain",
-        "content_type": 7,
-        "codename": "view_domain"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 29,
-    "fields": {
-        "name": "Can add topic",
-        "content_type": 8,
-        "codename": "add_topic"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 30,
-    "fields": {
-        "name": "Can change topic",
-        "content_type": 8,
-        "codename": "change_topic"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 31,
-    "fields": {
-        "name": "Can delete topic",
-        "content_type": 8,
-        "codename": "delete_topic"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 32,
-    "fields": {
-        "name": "Can view topic",
-        "content_type": 8,
-        "codename": "view_topic"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 33,
-    "fields": {
-        "name": "Can add resource",
-        "content_type": 9,
-        "codename": "add_resource"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 34,
-    "fields": {
-        "name": "Can change resource",
-        "content_type": 9,
-        "codename": "change_resource"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 35,
-    "fields": {
-        "name": "Can delete resource",
-        "content_type": 9,
-        "codename": "delete_resource"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 36,
-    "fields": {
-        "name": "Can view resource",
-        "content_type": 9,
-        "codename": "view_resource"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 37,
-    "fields": {
-        "name": "Can add question",
-        "content_type": 10,
-        "codename": "add_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 38,
-    "fields": {
-        "name": "Can change question",
-        "content_type": 10,
-        "codename": "change_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 39,
-    "fields": {
-        "name": "Can delete question",
-        "content_type": 10,
-        "codename": "delete_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 40,
-    "fields": {
-        "name": "Can view question",
-        "content_type": 10,
-        "codename": "view_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 41,
-    "fields": {
-        "name": "Can add test attempt",
-        "content_type": 11,
-        "codename": "add_testattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 42,
-    "fields": {
-        "name": "Can change test attempt",
-        "content_type": 11,
-        "codename": "change_testattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 43,
-    "fields": {
-        "name": "Can delete test attempt",
-        "content_type": 11,
-        "codename": "delete_testattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 44,
-    "fields": {
-        "name": "Can view test attempt",
-        "content_type": 11,
-        "codename": "view_testattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 45,
-    "fields": {
-        "name": "Can add question",
-        "content_type": 12,
-        "codename": "add_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 46,
-    "fields": {
-        "name": "Can change question",
-        "content_type": 12,
-        "codename": "change_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 47,
-    "fields": {
-        "name": "Can delete question",
-        "content_type": 12,
-        "codename": "delete_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 48,
-    "fields": {
-        "name": "Can view question",
-        "content_type": 12,
-        "codename": "view_question"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 49,
-    "fields": {
-        "name": "Can add user profile",
-        "content_type": 13,
-        "codename": "add_userprofile"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 50,
-    "fields": {
-        "name": "Can change user profile",
-        "content_type": 13,
-        "codename": "change_userprofile"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 51,
-    "fields": {
-        "name": "Can delete user profile",
-        "content_type": 13,
-        "codename": "delete_userprofile"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 52,
-    "fields": {
-        "name": "Can view user profile",
-        "content_type": 13,
-        "codename": "view_userprofile"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 53,
-    "fields": {
-        "name": "Can add otp verification",
-        "content_type": 14,
-        "codename": "add_otpverification"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 54,
-    "fields": {
-        "name": "Can change otp verification",
-        "content_type": 14,
-        "codename": "change_otpverification"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 55,
-    "fields": {
-        "name": "Can delete otp verification",
-        "content_type": 14,
-        "codename": "delete_otpverification"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 56,
-    "fields": {
-        "name": "Can view otp verification",
-        "content_type": 14,
-        "codename": "view_otpverification"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 57,
-    "fields": {
-        "name": "Can add admin action log",
-        "content_type": 15,
-        "codename": "add_adminactionlog"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 58,
-    "fields": {
-        "name": "Can change admin action log",
-        "content_type": 15,
-        "codename": "change_adminactionlog"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 59,
-    "fields": {
-        "name": "Can delete admin action log",
-        "content_type": 15,
-        "codename": "delete_adminactionlog"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 60,
-    "fields": {
-        "name": "Can view admin action log",
-        "content_type": 15,
-        "codename": "view_adminactionlog"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 61,
-    "fields": {
-        "name": "Can add login attempt",
-        "content_type": 16,
-        "codename": "add_loginattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 62,
-    "fields": {
-        "name": "Can change login attempt",
-        "content_type": 16,
-        "codename": "change_loginattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 63,
-    "fields": {
-        "name": "Can delete login attempt",
-        "content_type": 16,
-        "codename": "delete_loginattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 64,
-    "fields": {
-        "name": "Can view login attempt",
-        "content_type": 16,
-        "codename": "view_loginattempt"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 65,
-    "fields": {
-        "name": "Can add login history",
-        "content_type": 17,
-        "codename": "add_loginhistory"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 66,
-    "fields": {
-        "name": "Can change login history",
-        "content_type": 17,
-        "codename": "change_loginhistory"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 67,
-    "fields": {
-        "name": "Can delete login history",
-        "content_type": 17,
-        "codename": "delete_loginhistory"
-    }
-},
-{
-    "model": "auth.permission",
-    "pk": 68,
-    "fields": {
-        "name": "Can view login history",
-        "content_type": 17,
-        "codename": "view_loginhistory"
-    }
-},
-{
     "model": "auth.user",
-    "pk": 1,
     "fields": {
         "password": "pbkdf2_sha256$600000$ZEb80hoXARtN15XrZzktQZ$4gUYxKAFx07gbhNMzsZM1r+Po0cbw6TQsYVmB634Ty0=",
         "last_login": "2026-04-29T05:51:45.072Z",
@@ -631,7 +18,6 @@
 },
 {
     "model": "auth.user",
-    "pk": 2,
     "fields": {
         "password": "pbkdf2_sha256$600000$StEp6sLnrNvK0KML9qsxTF$3L+5LUiDU4SYgwIxioN+hrmCVOWVUjNUYdL1h+ujMqM=",
         "last_login": "2026-04-29T06:28:08.117Z",
@@ -649,7 +35,6 @@
 },
 {
     "model": "auth.user",
-    "pk": 3,
     "fields": {
         "password": "pbkdf2_sha256$600000$neCCc8E9F7FEKDUBq1t8iA$3L7hF9HZmZ6HSCEHSZOGstt8/M+s7OaNkxJ4DAjbhj8=",
         "last_login": "2026-05-19T07:19:48.760Z",
@@ -667,7 +52,6 @@
 },
 {
     "model": "auth.user",
-    "pk": 4,
     "fields": {
         "password": "pbkdf2_sha256$600000$a79tgT6cC9YdR4BkSFN41d$fZb96MDpsC9ixAiikF2MGk23fOeiYINpjCLT96r6Cao=",
         "last_login": null,
@@ -681,142 +65,6 @@
         "date_joined": "2026-05-17T18:15:56.817Z",
         "groups": [],
         "user_permissions": []
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 1,
-    "fields": {
-        "app_label": "admin",
-        "model": "logentry"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 2,
-    "fields": {
-        "app_label": "auth",
-        "model": "permission"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 3,
-    "fields": {
-        "app_label": "auth",
-        "model": "group"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 4,
-    "fields": {
-        "app_label": "auth",
-        "model": "user"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 5,
-    "fields": {
-        "app_label": "contenttypes",
-        "model": "contenttype"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 6,
-    "fields": {
-        "app_label": "sessions",
-        "model": "session"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 7,
-    "fields": {
-        "app_label": "syllabus",
-        "model": "domain"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 8,
-    "fields": {
-        "app_label": "syllabus",
-        "model": "topic"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 9,
-    "fields": {
-        "app_label": "resources",
-        "model": "resource"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 10,
-    "fields": {
-        "app_label": "practice",
-        "model": "question"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 11,
-    "fields": {
-        "app_label": "dashboard",
-        "model": "testattempt"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 12,
-    "fields": {
-        "app_label": "question_manager",
-        "model": "question"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 13,
-    "fields": {
-        "app_label": "users",
-        "model": "userprofile"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 14,
-    "fields": {
-        "app_label": "users",
-        "model": "otpverification"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 15,
-    "fields": {
-        "app_label": "users",
-        "model": "adminactionlog"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 16,
-    "fields": {
-        "app_label": "users",
-        "model": "loginattempt"
-    }
-},
-{
-    "model": "contenttypes.contenttype",
-    "pk": 17,
-    "fields": {
-        "app_label": "users",
-        "model": "loginhistory"
     }
 },
 {
@@ -847,7 +95,9 @@
     "model": "users.userprofile",
     "pk": 1,
     "fields": {
-        "user": 1,
+        "user": [
+            "testuser"
+        ],
         "role": "USER",
         "mobile_number": null,
         "device_id": null,
@@ -863,7 +113,9 @@
     "model": "users.userprofile",
     "pk": 2,
     "fields": {
-        "user": 2,
+        "user": [
+            "admin"
+        ],
         "role": "USER",
         "mobile_number": null,
         "device_id": null,
@@ -879,7 +131,9 @@
     "model": "users.userprofile",
     "pk": 3,
     "fields": {
-        "user": 3,
+        "user": [
+            "WhiteDevil"
+        ],
         "role": "ADMIN",
         "mobile_number": null,
         "device_id": "1588d303196b287a22bff984af1c52e4b3978da3f83a8ffb0015f3114d85d036",
@@ -895,7 +149,9 @@
     "model": "users.userprofile",
     "pk": 4,
     "fields": {
-        "user": 4,
+        "user": [
+            "DummyUser"
+        ],
         "role": "DUMMY",
         "mobile_number": null,
         "device_id": null,
@@ -911,7 +167,9 @@
     "model": "users.loginhistory",
     "pk": 1,
     "fields": {
-        "user": 3,
+        "user": [
+            "WhiteDevil"
+        ],
         "status": "SUCCESS",
         "ip_address": "127.0.0.1",
         "device_details": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
@@ -1072,7 +330,9 @@
     "model": "dashboard.testattempt",
     "pk": 1,
     "fields": {
-        "user": 1,
+        "user": [
+            "testuser"
+        ],
         "score": 2,
         "total_questions": 3,
         "percentage": 66.66666666666666,
@@ -1084,7 +344,9 @@
     "model": "dashboard.testattempt",
     "pk": 2,
     "fields": {
-        "user": 3,
+        "user": [
+            "WhiteDevil"
+        ],
         "score": 2,
         "total_questions": 3,
         "percentage": 66.66666666666666,
@@ -1096,7 +358,9 @@
     "model": "dashboard.testattempt",
     "pk": 3,
     "fields": {
-        "user": 3,
+        "user": [
+            "WhiteDevil"
+        ],
         "score": 1,
         "total_questions": 4,
         "percentage": 25.0,
@@ -1108,7 +372,9 @@
     "model": "dashboard.testattempt",
     "pk": 4,
     "fields": {
-        "user": 3,
+        "user": [
+            "WhiteDevil"
+        ],
         "score": 1,
         "total_questions": 4,
         "percentage": 25.0,
@@ -1120,7 +386,9 @@
     "model": "dashboard.testattempt",
     "pk": 5,
     "fields": {
-        "user": 3,
+        "user": [
+            "WhiteDevil"
+        ],
         "score": 2,
         "total_questions": 4,
         "percentage": 50.0,
