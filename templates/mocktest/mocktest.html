@@ -1,275 +1,1346 @@
 {% extends 'base.html' %}
 
-{% block title %}Mock Test - ServiceNow CSA Prep{% endblock %}
+{% block title %}TCS iON Assessment Platform{% endblock %}
 
 {% block extra_head %}
 <style>
-    .timer-bar {
-        display: flex; align-items: center;
-        justify-content: space-between;
-        background: var(--primary); color: var(--white);
-        padding: 0.5rem 1rem; border-radius: 8px;
-        flex-shrink: 0; margin-bottom: 0.5rem;
+    /* Premium TCS iON Custom Styling */
+    :root {
+        --tcs-blue: #003366;
+        --tcs-light-blue: #eef4fc;
+        --tcs-dark: #222222;
+        --tcs-border: #cccccc;
+        --tcs-bg: #f9f9f9;
+        
+        --color-not-visited: #ffffff;
+        --color-not-answered: #e74c3c; /* Red */
+        --color-answered: #2ecc71; /* Green */
+        --color-review: #9b59b6; /* Purple */
     }
-    .timer-label { font-size: 0.72rem; opacity: 0.8; }
-    .timer-display { font-size: 1.3rem; font-weight: 700; font-family: 'Courier New', monospace; }
-    .timer-urgent { color: #ff6b6b !important; }
 
-    .q-nav {
-        display: flex; align-items: center;
-        justify-content: space-between;
-        margin-bottom: 0.6rem; font-size: 0.8rem;
-        color: var(--muted); flex-shrink: 0;
+    /* Override base.html structure for full screen lock */
+    body.in-exam {
+        overflow: hidden !important;
+        height: 100vh !important;
     }
-    .q-counter { font-weight: 700; color: var(--primary); }
-    .q-progress {
-        flex: 1; height: 4px;
-        background: var(--border); border-radius: 4px;
-        margin: 0 0.8rem; overflow: hidden;
+    body.in-exam .app-header, 
+    body.in-exam .app-sidebar {
+        display: none !important;
     }
-    .q-progress-fill {
-        height: 100%; background: var(--accent);
-        border-radius: 4px; transition: width 0.3s;
+    body.in-exam .app-body {
+        height: 100vh !important;
+        width: 100vw !important;
     }
-    .nav-btns { display: flex; gap: 0.4rem; }
-    .nav-btn {
-        padding: 0.35rem 0.8rem; border: 1px solid var(--border);
-        border-radius: 5px; background: var(--white);
-        cursor: pointer; font-size: 0.8rem; font-weight: 600;
-        color: var(--primary); transition: all 0.2s;
+    body.in-exam .app-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
     }
-    .nav-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
-    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .nav-btn.submit-nav { background: var(--accent); color: var(--primary); border-color: var(--accent); }
-    .nav-btn.submit-nav:hover { background: var(--accent-hover); }
 
-    .question-slide { display: none; }
-    .question-slide.active { display: block; }
-
-    .option-label {
-        display: flex; align-items: center; gap: 0.5rem;
-        padding: 0.55rem 0.8rem; border: 1px solid var(--border);
-        border-radius: 6px; margin-bottom: 0.4rem;
-        cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
-    }
-    .option-label:hover { border-color: var(--accent); background: rgba(212,175,55,0.05); }
-    .option-label.selected { border-color: var(--accent); background: rgba(212,175,55,0.1); font-weight: 600; }
-
-    .dot-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; flex-shrink: 0; }
-    .q-dot {
-        width: 28px; height: 28px; border-radius: 50%;
-        border: 2px solid var(--border);
-        cursor: pointer; font-size: 0.85rem;
-        display: flex; align-items: center; justify-content: center;
-        background: var(--white); transition: all 0.2s; font-weight: 600;
-    }
-    .q-dot.answered { background: var(--accent); border-color: var(--accent); color: var(--primary); }
-    .q-dot.current  { border-color: var(--primary); }
-
-    /* Quiz area fills remaining height */
-    .quiz-area {
-        flex: 1;
-        overflow: hidden;
+    /* General Layout Containers */
+    .tcs-wrapper {
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--tcs-dark);
+        background: #f1f3f6;
+        width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
+        user-select: none;
     }
-    .quiz-scroll {
+
+    /* ═══════ 1. INSTRUCTIONS SCREEN ═══════ */
+    .tcs-instructions-screen {
         flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        padding: 1.5rem;
+        overflow-y: auto;
+    }
+    .inst-header {
+        border-bottom: 2px solid var(--tcs-blue);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .inst-header h2 {
+        color: var(--tcs-blue);
+        font-weight: 700;
+        font-size: 1.4rem;
+        margin: 0;
+    }
+    .inst-grid {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 1.5rem;
+        flex: 1;
+    }
+    .inst-left {
+        border-right: 1px solid var(--tcs-border);
+        padding-right: 1.5rem;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    .inst-right {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--tcs-light-blue);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #c9dff0;
+        align-self: flex-start;
+        text-align: center;
+    }
+    .inst-right img.candidate-img {
+        width: 110px;
+        height: 110px;
+        border-radius: 4px;
+        border: 2px solid var(--tcs-blue);
+        background: #fff;
+        margin-bottom: 1rem;
+        object-fit: cover;
+    }
+    .inst-right .candidate-details {
+        font-size: 0.9rem;
+    }
+    .inst-right .candidate-details h4 {
+        color: var(--tcs-blue);
+        font-size: 1.05rem;
+        margin-bottom: 0.3rem;
+    }
+    .inst-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 0.6rem;
+    }
+    .inst-legend-box {
+        width: 30px;
+        height: 25px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.85rem;
+        border: 1px solid #999;
+    }
+    .inst-footer {
+        border-top: 1px solid var(--tcs-border);
+        padding-top: 1rem;
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: center;
+    }
+    .inst-checkbox-label {
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        max-width: 800px;
+    }
+    .inst-checkbox-label input {
+        margin-top: 0.2rem;
+    }
+
+    /* ═══════ 2. COUNTDOWN OVERLAY ═══════ */
+    .countdown-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .countdown-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+    .countdown-number {
+        font-size: 9rem;
+        font-weight: 800;
+        color: #f39c12;
+        text-shadow: 0 0 25px rgba(243,156,18,0.5);
+        transform: scale(0.3);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .countdown-number.pop {
+        transform: scale(1);
+        opacity: 1;
+    }
+    .countdown-label {
+        font-size: 1.5rem;
+        color: #ffffff;
+        margin-top: 1rem;
+        letter-spacing: 1px;
+    }
+
+    /* ═══════ 3. MAIN EXAM INTERFACE ═══════ */
+    .tcs-exam-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .tcs-exam-header {
+        height: 48px;
+        background: var(--tcs-blue);
+        color: #ffffff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        font-size: 0.95rem;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+    .tcs-exam-header .timer-box {
+        background: #f39c12;
+        padding: 0.3rem 0.8rem;
+        border-radius: 4px;
+        color: #000;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.1rem;
+        font-weight: 800;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    /* Dual Panel Flex Layout */
+    .tcs-main-panel {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+    }
+
+    /* Left Workspace Panel */
+    .tcs-workspace {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border-right: 1px solid var(--tcs-border);
+        overflow: hidden;
+    }
+    .tcs-question-bar {
+        background: var(--tcs-light-blue);
+        border-bottom: 1px solid var(--tcs-border);
+        padding: 0.5rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+        color: var(--tcs-blue);
+        flex-shrink: 0;
+    }
+    .tcs-question-body {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .tcs-question-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+    .tcs-question-image-box {
+        margin-bottom: 1rem;
+        max-width: 100%;
+    }
+    .tcs-question-image-box img {
+        max-height: 250px;
+        border: 1px solid var(--tcs-border);
+        border-radius: 6px;
+    }
+    .tcs-options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+    .tcs-option-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--tcs-border);
+        border-radius: 6px;
+        background: var(--tcs-bg);
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+    .tcs-option-label:hover {
+        border-color: var(--tcs-blue);
+        background: #fcfdfe;
+    }
+    .tcs-option-label.selected {
+        border-color: var(--tcs-blue);
+        background: #eef4fc;
+        font-weight: 600;
+    }
+    .tcs-option-label input {
+        margin-top: 0.2rem;
+        transform: scale(1.15);
+        cursor: pointer;
+    }
+
+    /* Left Panel Footer Actions */
+    .tcs-workspace-footer {
+        height: 52px;
+        background: var(--tcs-light-blue);
+        border-top: 1px solid var(--tcs-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        flex-shrink: 0;
+    }
+    .tcs-action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.88rem;
+        font-weight: bold;
+        border: 1px solid #999999;
+        border-radius: 4px;
+        background: #ffffff;
+        color: #333333;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .tcs-action-btn:hover {
+        background: #f1f1f1;
+    }
+    .tcs-action-btn.btn-primary {
+        background: var(--tcs-blue);
+        color: #ffffff;
+        border-color: var(--tcs-blue);
+    }
+    .tcs-action-btn.btn-primary:hover {
+        background: #002244;
+    }
+    .tcs-action-btn.btn-success {
+        background: #27ae60;
+        color: #ffffff;
+        border-color: #27ae60;
+    }
+    .tcs-action-btn.btn-success:hover {
+        background: #1e8449;
+    }
+    .tcs-action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: #e6e6e6 !important;
+    }
+
+    /* Right Sidebar Panel */
+    .tcs-sidebar {
+        width: 280px;
+        background: #eef4fc;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .tcs-candidate-card {
+        padding: 0.8rem;
+        background: #ffffff;
+        border-bottom: 1px solid var(--tcs-border);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+    .tcs-candidate-card img.candidate-thumb {
+        width: 60px;
+        height: 60px;
+        border: 1.5px solid var(--tcs-blue);
+        border-radius: 3px;
+        object-fit: cover;
+    }
+    .tcs-candidate-card .details {
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+    /* Palette Grid Section */
+    .tcs-palette-section {
+        flex: 1;
+        padding: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .tcs-palette-title {
+        font-size: 0.82rem;
+        font-weight: bold;
+        color: var(--tcs-blue);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid var(--tcs-border);
+        padding-bottom: 0.2rem;
+        flex-shrink: 0;
+    }
+    .tcs-palette-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.45rem;
         overflow-y: auto;
         padding-right: 4px;
+        align-content: start;
     }
-    .quiz-scroll::-webkit-scrollbar { width: 5px; }
-    .quiz-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    .tcs-palette-box {
+        height: 38px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        border: 1px solid #bbbbbb;
+        background: var(--color-not-visited);
+        color: #333333;
+        transition: all 0.2s ease;
+    }
+    .tcs-palette-box:hover {
+        transform: scale(1.05);
+    }
+    /* States matching TCS platform */
+    .tcs-palette-box.not-visited {
+        background: var(--color-not-visited);
+        border-color: #bbbbbb;
+        color: #333333;
+    }
+    .tcs-palette-box.visited {
+        background: var(--color-not-answered);
+        border-color: var(--color-not-answered);
+        color: #ffffff;
+    }
+    .tcs-palette-box.answered {
+        background: var(--color-answered);
+        border-color: var(--color-answered);
+        color: #ffffff;
+    }
+    .tcs-palette-box.marked-for-review {
+        background: var(--color-review);
+        border-color: var(--color-review);
+        color: #ffffff;
+    }
+    .tcs-palette-box.active-palette {
+        box-shadow: 0 0 0 2.5px var(--tcs-blue), 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Legends panel */
+    .tcs-legend-panel {
+        padding: 0.6rem;
+        background: #ffffff;
+        border-top: 1px solid var(--tcs-border);
+        border-bottom: 1px solid var(--tcs-border);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+        font-size: 0.78rem;
+        flex-shrink: 0;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .legend-badge {
+        width: 24px;
+        height: 20px;
+        border-radius: 3px;
+        border: 1.5px solid #aaaaaa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.72rem;
+    }
+    .legend-badge.bg-white { background: var(--color-not-visited); color: #000; }
+    .legend-badge.bg-red   { background: var(--color-not-answered); color: #fff; border-color: var(--color-not-answered); }
+    .legend-badge.bg-green { background: var(--color-answered); color: #fff; border-color: var(--color-answered); }
+    .legend-badge.bg-purple { background: var(--color-review); color: #fff; border-color: var(--color-review); }
+
+    /* Submit Section */
+    .tcs-sidebar-footer {
+        padding: 0.8rem;
+        background: #ffffff;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .tcs-submit-btn {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        border-radius: 6px;
+        border: none;
+        background: #e67e22;
+        color: #ffffff;
+        cursor: pointer;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        transition: all 0.15s ease;
+    }
+    .tcs-submit-btn:hover {
+        background: #d35400;
+        transform: translateY(-1px);
+    }
+
+    /* ═══════ 4. CUSTOM WARNING MODALS ═══════ */
+    .tcs-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .tcs-modal-overlay.open {
+        opacity: 1;
+        pointer-events: all;
+    }
+    .tcs-modal-box {
+        background: #ffffff;
+        border-radius: 8px;
+        border-top: 6px solid #d35400;
+        width: 90%;
+        max-width: 480px;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.4);
+        padding: 1.5rem;
+        text-align: center;
+        transform: scale(0.95);
+        transition: transform 0.25s ease;
+    }
+    .tcs-modal-overlay.open .tcs-modal-box {
+        transform: scale(1);
+    }
+    .tcs-modal-title {
+        color: #d35400;
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .tcs-modal-body {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #444;
+        margin-bottom: 1.5rem;
+    }
+    .tcs-modal-footer {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    /* Lightweight Question Loader */
+    .loader-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        gap: 0.8rem;
+        color: var(--tcs-blue);
+    }
+    .loader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--tcs-light-blue);
+        border-top: 4px solid var(--tcs-blue);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-{# ── Timer Bar ── #}
-<div class="timer-bar">
-    <div>
-        <div class="timer-label">Time Remaining</div>
-        <div class="timer-display" id="timer">{{ timer_minutes }}:00</div>
-    </div>
-    <div style="text-align:right; font-size:0.9rem; opacity:0.8;">
-        CSA Mock Exam<br><span id="qTotal">{{ questions|length }}</span> Questions
-    </div>
-</div>
+<div class="tcs-wrapper">
 
-{# ── Question Dots ── #}
-<div class="dot-row" id="dotRow">
-    {% for q in questions %}
-    <div class="q-dot {% if forloop.first %}current{% endif %}" id="dot-{{ forloop.counter0 }}"
-         onclick="goTo({{ forloop.counter0 }})">{{ forloop.counter }}</div>
-    {% endfor %}
-</div>
-
-{# ── Nav Bar ── #}
-<div class="q-nav">
-    <span class="q-counter" id="qCounter">1 / {{ questions|length }}</span>
-    <div class="q-progress"><div class="q-progress-fill" id="qProgress"></div></div>
-    <div class="nav-btns">
-        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592;</button>
-        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">&#8594;</button>
-        <button class="nav-btn submit-nav" onclick="confirmSubmit()">Submit &#10003;</button>
-    </div>
-</div>
-
-{# ── Questions (one at a time) ── #}
-<div class="quiz-area">
-<div class="quiz-scroll">
-<form id="quizForm" method="POST" action="{% url 'mocktest:submit' %}"
-      data-total="{{ questions|length }}" data-timer="{{ timer_minutes }}">
-    {% csrf_token %}
-    <input type="hidden" name="exam_type" value="{{ exam_type }}">
-    {% for q in questions %}
-    <input type="hidden" name="question_ids" value="{{ q.id }}">
-    <div class="question-slide {% if forloop.first %}active{% endif %}" id="slide-{{ forloop.counter0 }}">
-        <div class="question-card">
-            <div style="margin-bottom: 0.5rem;">
-                <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ q.topic }}</span>
-                <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ q.get_question_type_display }}</span>
+    <!-- ═══ 1. INSTRUCTIONS PANEL ═══ -->
+    <div class="tcs-instructions-screen" id="tcsInstructionsScreen">
+        <div class="inst-header">
+            <h2>ServiceNow CSA Online Assessment Instructions</h2>
+            <div style="font-weight:bold; color:#777; font-size:0.9rem;">
+                Duration: {{ timer_minutes }} Minutes
             </div>
-            
-            {% if q.question_image %}
-            <div style="margin-bottom: 1rem;">
-                <img src="{{ q.question_image.url }}" style="max-height: 200px; max-width: 100%; border-radius: 8px; border: 1px solid #ddd;">
+        </div>
+        
+        <div class="inst-grid">
+            <!-- Left Side Instructions List -->
+            <div class="inst-left">
+                <h4 style="color:var(--tcs-blue); font-weight:700; margin-bottom:0.5rem;">General Instructions:</h4>
+                <ol style="padding-left:1.2rem; margin-bottom:1rem;">
+                    <li>This test consists of ServiceNow Certified System Administrator (CSA) mock exam questions.</li>
+                    <li>The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination.</li>
+                    <li>When the timer reaches zero, the examination will end automatically and submit your responses.</li>
+                    <li>You must not exit <strong>FULL SCREEN mode</strong> during the assessment. Exiting full screen will count as an automatic submission attempt.</li>
+                </ol>
+
+                <h4 style="color:var(--tcs-blue); font-weight:700; margin-bottom:0.5rem;">Navigating & Palette Indicator Meanings:</h4>
+                <p style="margin-bottom:0.8rem;">To select a question, click on the question number in the question palette on the right side of your screen. Note the following color status indicators:</p>
+                
+                <div class="inst-legend-item">
+                    <div class="inst-legend-box" style="background:#ffffff; color:#000;">1</div>
+                    <div><strong>Not Visited:</strong> You have not opened or viewed this question yet.</div>
+                </div>
+                <div class="inst-legend-item">
+                    <div class="inst-legend-box" style="background:#e74c3c; border-color:#e74c3c; color:#fff;">2</div>
+                    <div><strong>Visited but Not Answered:</strong> You have viewed the question, but have not selected any answer.</div>
+                </div>
+                <div class="inst-legend-item">
+                    <div class="inst-legend-box" style="background:#2ecc71; border-color:#2ecc71; color:#fff;">3</div>
+                    <div><strong>Answered:</strong> You have selected option(s) for the question.</div>
+                </div>
+                <div class="inst-legend-item">
+                    <div class="inst-legend-box" style="background:#9b59b6; border-color:#9b59b6; color:#fff;">4</div>
+                    <div><strong>Marked for Review:</strong> You have flagged this question for double checking later. It will show as purple.</div>
+                </div>
+
+                <h4 style="color:var(--tcs-blue); font-weight:700; margin-top:1.2rem; margin-bottom:0.5rem;">Answering a Question:</h4>
+                <ul style="padding-left:1.2rem; margin-bottom:1rem;">
+                    <li>For Single Choice questions, click the radio option. For Multiple Select questions, tick checkboxes.</li>
+                    <li>To secure your answer and count it as Answered (Green), click the <strong>Save & Next</strong> button at the bottom of the Workspace.</li>
+                    <li>Answers are cached securely in the browser and synchronized immediately with the system.</li>
+                </ul>
             </div>
-            {% endif %}
-            
-            <p class="question-text">{{ q.question_text }}</p>
-            
-            <div class="options-grid" id="opts-{{ forloop.counter0 }}">
-                {% if q.question_type == 'SINGLE_CHOICE' %}
-                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
-                        <input type="radio" name="q_{{ q.id }}" value="A"> A. {{ q.option_a }}
-                    </label>
-                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
-                        <input type="radio" name="q_{{ q.id }}" value="B"> B. {{ q.option_b }}
-                    </label>
-                    {% if q.option_c %}
-                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
-                        <input type="radio" name="q_{{ q.id }}" value="C"> C. {{ q.option_c }}
-                    </label>
-                    {% endif %}
-                    {% if q.option_d %}
-                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
-                        <input type="radio" name="q_{{ q.id }}" value="D"> D. {{ q.option_d }}
-                    </label>
-                    {% endif %}
-                    {% if q.option_e %}
-                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
-                        <input type="radio" name="q_{{ q.id }}" value="E"> E. {{ q.option_e }}
-                    </label>
-                    {% endif %}
-                {% else %}
-                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
-                        <input type="checkbox" name="q_{{ q.id }}" value="A"> A. {{ q.option_a }}
-                    </label>
-                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
-                        <input type="checkbox" name="q_{{ q.id }}" value="B"> B. {{ q.option_b }}
-                    </label>
-                    {% if q.option_c %}
-                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
-                        <input type="checkbox" name="q_{{ q.id }}" value="C"> C. {{ q.option_c }}
-                    </label>
-                    {% endif %}
-                    {% if q.option_d %}
-                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
-                        <input type="checkbox" name="q_{{ q.id }}" value="D"> D. {{ q.option_d }}
-                    </label>
-                    {% endif %}
-                    {% if q.option_e %}
-                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
-                        <input type="checkbox" name="q_{{ q.id }}" value="E"> E. {{ q.option_e }}
-                    </label>
-                    {% endif %}
-                {% endif %}
+
+            <!-- Right Side Candidate Details Box -->
+            <div class="inst-right">
+                <img src="/static/images/default_user.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" class="candidate-img" alt="Candidate thumb">
+                <div class="candidate-details">
+                    <div style="font-size:0.75rem; color:#777; text-transform:uppercase; letter-spacing:0.5px;">Candidate</div>
+                    <h4>{{ user.username }}</h4>
+                    <div style="font-size:0.75rem; color:#777; text-transform:uppercase; letter-spacing:0.5px; margin-top:0.8rem;">Assessment Name</div>
+                    <strong style="color: #333;">ServiceNow CSA Mock Exam</strong>
+                    <div style="font-size:0.75rem; color:#777; text-transform:uppercase; letter-spacing:0.5px; margin-top:0.8rem;">Questions Count</div>
+                    <strong style="color: #333;">{{ total_questions }} Questions</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="inst-footer">
+            <label class="inst-checkbox-label">
+                <input type="checkbox" id="instCheckbox" onchange="toggleBeginButton()">
+                <span>I have read, understood and agree to follow all the rules and instructions mentioned above. I agree that in case of any cheating or escaping from the exam interface, my candidate registration will be canceled.</span>
+            </label>
+            <div style="display:flex; gap:1rem; width:100%; max-width:400px; justify-content:center;">
+                <button type="button" class="tcs-action-btn btn-primary" id="beginExamBtn" style="font-size:1.1rem; padding:0.75rem 2rem; width:100%;" disabled onclick="initiateExamFlow()">I am ready to begin</button>
+            </div>
+            <a href="{% url 'mocktest:index' %}" style="color:#777; text-decoration:none; font-size:0.9rem;">&larr; Exit to Mock Test List</a>
+        </div>
+    </div>
+
+    <!-- ═══ 2. COUNTDOWN OVERLAY ═══ -->
+    <div class="countdown-overlay" id="countdownOverlay">
+        <div class="countdown-number" id="countdownNumber">5</div>
+        <div class="countdown-label">Preparing Exam Environment...</div>
+    </div>
+
+    <!-- ═══ 3. MAIN EXAM PLATFORM CONTAINER ═══ -->
+    <div class="tcs-exam-container" id="tcsExamContainer" style="display: none;">
+        <!-- Top bar details -->
+        <div class="tcs-exam-header">
+            <div>
+                ServiceNow Certified System Administrator (CSA) Mock Exam &mdash;
+                <span id="examTopicLabel" style="font-weight:normal; font-style:italic;">Loading...</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:1.2rem;">
+                <div style="font-size:0.85rem; opacity:0.85;">Time Remaining:</div>
+                <div class="timer-box" id="tcsTimer">00:00:00</div>
+            </div>
+        </div>
+
+        <!-- Body split panels -->
+        <div class="tcs-main-panel">
+            <!-- Left question Workspace -->
+            <div class="tcs-workspace">
+                <div class="tcs-question-bar">
+                    <span id="workspaceQuestionNum">Question No. 1</span>
+                    <span id="workspaceQuestionType" style="background:var(--tcs-blue); color:#fff; font-size:0.75rem; padding:0.2rem 0.5rem; border-radius:10px;">SINGLE CHOICE</span>
+                </div>
+
+                <!-- AJAX Loaded content space -->
+                <div class="tcs-question-body" id="workspaceQuestionBody">
+                    <div class="loader-box">
+                        <div class="loader-spinner"></div>
+                        <div style="font-weight:bold;">Loading question data, please wait...</div>
+                    </div>
+                </div>
+
+                <!-- Footer Navigation Actions -->
+                <div class="tcs-workspace-footer">
+                    <div>
+                        <button class="tcs-action-btn" id="tcsClearBtn" onclick="clearResponse()">Clear Response</button>
+                        <button class="tcs-action-btn" id="tcsReviewBtn" style="margin-left:0.5rem;" onclick="markForReview()">Mark for Review & Next</button>
+                    </div>
+                    <div>
+                        <button class="tcs-action-btn" id="tcsPrevBtn" onclick="navigateQuestion(-1)">&larr; Previous</button>
+                        <button class="tcs-action-btn btn-primary" id="tcsSaveNextBtn" style="margin-left:0.5rem;" onclick="saveAndNext()">Save & Next &rarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Palette Sidebar -->
+            <div class="tcs-sidebar">
+                <!-- User card -->
+                <div class="tcs-candidate-card">
+                    <img src="/static/images/default_user.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" class="candidate-thumb" alt="Candidate thumbnail">
+                    <div class="details">
+                        <div style="font-size:0.72rem; color:#777; text-transform:uppercase;">Candidate</div>
+                        <strong>{{ user.username }}</strong>
+                        <div style="font-size:0.72rem; color:#777; text-transform:uppercase; margin-top:0.2rem;">Mock Test</div>
+                        <span style="font-weight:600;">CSA Mock Test</span>
+                    </div>
+                </div>
+
+                <!-- Numbers Grid -->
+                <div class="tcs-palette-section">
+                    <div class="tcs-palette-title">Question Palette</div>
+                    <div class="tcs-palette-grid" id="paletteGrid">
+                        <!-- Filled in Javascript -->
+                    </div>
+                </div>
+
+                <!-- Statistics Legend -->
+                <div class="tcs-legend-panel">
+                    <div class="legend-item">
+                        <div class="legend-badge bg-green" id="statAnswered">0</div>
+                        <span>Answered</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-badge bg-red" id="statNotAnswered">0</div>
+                        <span>Not Answered</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-badge bg-white" id="statNotVisited">{{ total_questions }}</div>
+                        <span>Not Visited</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-badge bg-purple" id="statMarked">0</div>
+                        <span>Marked Review</span>
+                    </div>
+                </div>
+
+                <!-- Submission Button Area -->
+                <div class="tcs-sidebar-footer">
+                    <button class="tcs-submit-btn" onclick="openConfirmationModal()">Submit Exam</button>
+                </div>
             </div>
         </div>
     </div>
-    {% endfor %}
+
+</div>
+
+<!-- ═══ 4. TCS MODAL POPUPS (Exit & Confirmations) ═══ -->
+
+<!-- Escape / Exit Fullscreen Warning Modal -->
+<div class="tcs-modal-overlay" id="exitWarningModal">
+    <div class="tcs-modal-box">
+        <div class="tcs-modal-title">
+            ⚠️ WARNING: Exam Environment Exit
+        </div>
+        <div class="tcs-modal-body">
+            You are attempting to exit the secure full screen exam environment. 
+            Exiting full screen will force an immediate submit of your exam paper.
+            <br><br>
+            Are you sure you want to exit and submit your answers?
+        </div>
+        <div class="tcs-modal-footer">
+            <button class="tcs-action-btn" onclick="resumeFullScreenExam()">No, Resume Exam</button>
+            <button class="tcs-action-btn btn-primary" onclick="forceSubmitExam()">Yes, Submit Exam</button>
+        </div>
+    </div>
+</div>
+
+<!-- Normal Submit Confirmation Modal -->
+<div class="tcs-modal-overlay" id="submitConfirmModal">
+    <div class="tcs-modal-box">
+        <div class="tcs-modal-title" style="color:var(--tcs-blue); border-color:var(--tcs-blue);">
+            📝 Submit Exam Confirmation
+        </div>
+        <div class="tcs-modal-body" style="text-align:left;">
+            Are you sure you want to submit your ServiceNow CSA Mock Exam? 
+            Please review your final summary breakdown before submitting:
+            <table style="width:100%; border-collapse:collapse; margin-top:0.8rem; font-size:0.9rem;">
+                <tr style="border-bottom:1px solid #eee;"><td style="padding:0.4rem 0;">Total Questions:</td><td style="text-align:right; font-weight:bold;">{{ total_questions }}</td></tr>
+                <tr style="border-bottom:1px solid #eee;"><td style="padding:0.4rem 0; color:#27ae60;">Answered:</td><td style="text-align:right; font-weight:bold; color:#27ae60;" id="sumAnswered">0</td></tr>
+                <tr style="border-bottom:1px solid #eee;"><td style="padding:0.4rem 0; color:#c0392b;">Not Answered:</td><td style="text-align:right; font-weight:bold; color:#c0392b;" id="sumNotAnswered">0</td></tr>
+                <tr style="border-bottom:1px solid #eee;"><td style="padding:0.4rem 0; color:#9b59b6;">Marked for Review:</td><td style="text-align:right; font-weight:bold; color:#9b59b6;" id="sumMarked">0</td></tr>
+                <tr><td style="padding:0.4rem 0; color:#888;">Not Visited:</td><td style="text-align:right; font-weight:bold; color:#888;" id="sumNotVisited">0</td></tr>
+            </table>
+            <br>
+            Once submitted, you will not be able to change or revise your answers!
+        </div>
+        <div class="tcs-modal-footer">
+            <button class="tcs-action-btn" onclick="closeTcsModal('submitConfirmModal')">Cancel & Return</button>
+            <button class="tcs-action-btn btn-success" onclick="forceSubmitExam()">Confirm Submit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Back-end Submission helper form -->
+<form id="tcsFinalSubmitForm" method="POST" action="{% url 'mocktest:submit' %}" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="exam_type" value="{{ exam_type }}">
+    <input type="hidden" name="time_taken" id="formTimeTaken" value="">
+    <!-- Javascript will dynamically add question ids and selected values here upon submit -->
 </form>
-</div>
-</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const quizForm = document.getElementById('quizForm');
-const total     = parseInt(quizForm.dataset.total, 10);
-const timerMins = parseInt(quizForm.dataset.timer, 10);
-let current  = 0;
-const answered = new Set();
-
-// Set initial progress
-document.getElementById('qProgress').style.width = (1 / total * 100) + '%';
-
-function goTo(idx) {
-    document.getElementById('slide-' + current).classList.remove('active');
-    document.getElementById('dot-' + current).classList.remove('current');
-    current = idx;
-    document.getElementById('slide-' + current).classList.add('active');
-    document.getElementById('dot-' + current).classList.add('current');
-    document.getElementById('qCounter').textContent = (current + 1) + ' / ' + total;
-    document.getElementById('qProgress').style.width = ((current + 1) / total * 100) + '%';
-    document.getElementById('prevBtn').disabled = current === 0;
-    document.getElementById('nextBtn').disabled = current === total - 1;
-}
-
-function navigate(dir) { goTo(Math.max(0, Math.min(total - 1, current + dir))); }
-
-function markAnswered(idx, label, type) {
-    const grid = label.parentElement;
+    // State management variables
+    const questionIds = {{ question_ids|safe }};
+    const totalQuestions = {{ total_questions }};
+    const timerMins = {{ timer_minutes }};
     
-    if (type === 'radio') {
-        grid.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
-        label.classList.add('selected');
-        answered.add(idx);
-        document.getElementById('dot-' + idx).classList.add('answered');
-    } else {
-        // Checkbox logic
-        const input = label.querySelector('input');
-        // The click event is tricky. We need to sync class with input.checked state.
-        // Prevent default click handling delay by relying on actual change event 
-        // but since we are handling onclick on the label:
-        setTimeout(() => {
-            if (input.checked) {
-                label.classList.add('selected');
+    let currentIndex = 0;
+    
+    // Caches and state tracking
+    const questionCache = {}; // Cache AJAX responses: { q_id: {data} }
+    const answers = {};       // Selected answers: { q_id: "A" or ["A", "C"] }
+    const visited = new Set([0]); // Set of indices visited (Always index 0 at start)
+    const markedForReview = new Set(); // Set of indices marked for review
+    
+    // Timer details
+    let timeLeft = timerMins * 60;
+    let timerInterval = null;
+    let testStarted = false;
+    let elapsedSeconds = 0;
+    
+    // Enable "Ready to Begin" button when declaration is agreed
+    function toggleBeginButton() {
+        const checkbox = document.getElementById('instCheckbox');
+        document.getElementById('beginExamBtn').disabled = !checkbox.checked;
+    }
+    
+    // Initiate Fullscreen and countdown flow
+    function initiateExamFlow() {
+        // 1. Force Fullscreen mode
+        enterFullScreen();
+        
+        // 2. Add classes to body to hide sidebar and website header
+        document.body.classList.add('in-exam');
+        
+        // 3. Show countdown sequence
+        const overlay = document.getElementById('countdownOverlay');
+        const countText = document.getElementById('countdownNumber');
+        overlay.classList.add('active');
+        
+        let count = 5;
+        setTimeout(() => countText.classList.add('pop'), 50);
+        
+        const countdown = setInterval(() => {
+            count--;
+            countText.classList.remove('pop');
+            
+            if (count > 0) {
+                countText.textContent = count;
+                setTimeout(() => countText.classList.add('pop'), 50);
+            } else if (count === 0) {
+                countText.textContent = 'START';
+                setTimeout(() => countText.classList.add('pop'), 50);
             } else {
-                label.classList.remove('selected');
+                clearInterval(countdown);
+                overlay.classList.remove('active');
+                
+                // 4. Reveal Exam Interface
+                document.getElementById('tcsInstructionsScreen').style.display = 'none';
+                document.getElementById('tcsExamContainer').style.display = 'flex';
+                
+                // Start tracking
+                initializeExamEngine();
+            }
+        }, 1000);
+    }
+    
+    // Enter browser fullscreen with fallback security checks
+    function enterFullScreen() {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen();
+        } else if (docEl.mozRequestFullScreen) { // Firefox
+            docEl.mozRequestFullScreen();
+        } else if (docEl.webkitRequestFullscreen) { // Chrome, Safari
+            docEl.webkitRequestFullscreen();
+        } else if (docEl.msRequestFullscreen) { // IE/Edge
+            docEl.msRequestFullscreen();
+        }
+    }
+    
+    // Browser fullscreen state exits listener
+    document.addEventListener('fullscreenchange', handleFullscreenStateChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenStateChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenStateChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenStateChange);
+    
+    function handleFullscreenStateChange() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+            !document.mozFullScreenElement && !document.msFullscreenElement) {
+            // Full screen was exited
+            if (testStarted) {
+                openTcsModal('exitWarningModal');
+            }
+        }
+    }
+    
+    // Intercept ESC key press event
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && testStarted) {
+            e.preventDefault();
+            openTcsModal('exitWarningModal');
+        }
+    });
+    
+    // Resume Fullscreen and close the warning dialog
+    function resumeFullScreenExam() {
+        closeTcsModal('exitWarningModal');
+        enterFullScreen();
+    }
+    
+    // Open a custom modal popup
+    function openTcsModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    
+    // Close a custom modal popup
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+    function closeTcsModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+    
+    // Initialize question numbers in palette, launch caching, start timer
+    function initializeExamEngine() {
+        testStarted = true;
+        
+        // Render Palette Buttons
+        const palette = document.getElementById('paletteGrid');
+        palette.innerHTML = '';
+        for (let i = 0; i < totalQuestions; i++) {
+            const btn = document.createElement('div');
+            btn.id = `palette-box-${i}`;
+            btn.className = 'tcs-palette-box not-visited';
+            btn.textContent = i + 1;
+            btn.onclick = () => jumpToQuestion(i);
+            palette.appendChild(btn);
+        }
+        
+        // Fetch and Display the first question
+        loadQuestion(0);
+        
+        // Start Time Counting
+        startTimer();
+    }
+    
+    // Standard Timer Functionality
+    function startTimer() {
+        const timerEl = document.getElementById('tcsTimer');
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            elapsedSeconds++;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert('Time is up! Your exam will be submitted automatically.');
+                forceSubmitExam();
+                return;
             }
             
-            // Check if ANY checkbox is selected
-            const anyChecked = Array.from(grid.querySelectorAll('input')).some(i => i.checked);
-            if (anyChecked) {
-                answered.add(idx);
-                document.getElementById('dot-' + idx).classList.add('answered');
-            } else {
-                answered.delete(idx);
-                document.getElementById('dot-' + idx).classList.remove('answered');
+            const hours = Math.floor(timeLeft / 3600);
+            const mins = Math.floor((timeLeft % 3600) / 60);
+            const secs = timeLeft % 60;
+            
+            timerEl.textContent = 
+                (hours < 10 ? '0' : '') + hours + ':' + 
+                (mins < 10 ? '0' : '') + mins + ':' + 
+                (secs < 10 ? '0' : '') + secs;
+                
+            // Urgent Alert Style
+            if (timeLeft <= 300) { // last 5 minutes
+                timerEl.style.background = '#e74c3c';
+                timerEl.style.color = '#ffffff';
             }
-        }, 10);
+        }, 1000);
     }
-}
-
-function confirmSubmit() {
-    const unanswered = total - answered.size;
-    if (unanswered > 0) {
-        if (!confirm(unanswered + ' question(s) unanswered. Submit anyway?')) return;
+    
+    // Load Question from cache or retrieve dynamically via AJAX
+    function loadQuestion(idx) {
+        currentIndex = idx;
+        visited.add(idx);
+        
+        const q_id = questionIds[idx];
+        const bodyEl = document.getElementById('workspaceQuestionBody');
+        
+        // Update Workspace Info Headers
+        document.getElementById('workspaceQuestionNum').textContent = `Question No. ${idx + 1}`;
+        
+        // If cached in client side memory, display instantly!
+        if (questionCache[q_id]) {
+            renderQuestionHTML(questionCache[q_id]);
+            updatePaletteAndStats();
+            return;
+        }
+        
+        // Render Loading State
+        bodyEl.innerHTML = `
+            <div class="loader-box">
+                <div class="loader-spinner"></div>
+                <div style="font-weight:bold;">Fetching question data from server...</div>
+            </div>
+        `;
+        
+        // Retrieve via AJAX
+        fetch(`/mocktest/api/get_question/?id=${q_id}`)
+            .then(res => {
+                if (!res.ok) throw new Error('API fetch failed');
+                return res.json();
+            })
+            .then(data => {
+                questionCache[q_id] = data; // Cache question
+                renderQuestionHTML(data);
+                updatePaletteAndStats();
+            })
+            .catch(err => {
+                console.error(err);
+                bodyEl.innerHTML = `
+                    <div style="color:#e74c3c; padding:2rem; font-weight:bold; text-align:center;">
+                        Failed to load question details. Please check your network connection or click Previous/Next to retry.
+                    </div>
+                `;
+            });
     }
-    quizForm.submit();
-}
-
-// ── Countdown Timer ──
-let timeLeft = timerMins * 60;
-const timerEl = document.getElementById('timer');
-const countdown = setInterval(() => {
-    const m = Math.floor(timeLeft / 60);
-    const s = timeLeft % 60;
-    timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-    if (timeLeft <= 60)  timerEl.classList.add('timer-urgent');
-    if (timeLeft <= 0)   { clearInterval(countdown); quizForm.submit(); }
-    timeLeft--;
-}, 1000);
+    
+    // Format and render the dynamic HTML structure for the loaded question
+    function renderQuestionHTML(data) {
+        const bodyEl = document.getElementById('workspaceQuestionBody');
+        document.getElementById('examTopicLabel').textContent = data.topic;
+        
+        const qType = document.getElementById('workspaceQuestionType');
+        qType.textContent = data.question_type.replace('_', ' ');
+        
+        let imgHtml = '';
+        if (data.image_url) {
+            imgHtml = `
+                <div class="tcs-question-image-box">
+                    <img src="${data.image_url}" alt="Question Diagram">
+                </div>
+            `;
+        }
+        
+        // Load answer selection state
+        const savedAnswer = answers[data.id] || null;
+        
+        let optsHtml = '<div class="tcs-options-container">';
+        const alphabet = ['A', 'B', 'C', 'D', 'E'];
+        
+        const optionsList = [
+            { key: 'A', text: data.option_a },
+            { key: 'B', text: data.option_b },
+            { key: 'C', text: data.option_c },
+            { key: 'D', text: data.option_d },
+            { key: 'E', text: data.option_e }
+        ];
+        
+        optionsList.forEach(opt => {
+            if (!opt.text) return; // Skip missing options
+            
+            let isChecked = false;
+            if (data.question_type === 'SINGLE_CHOICE') {
+                isChecked = (savedAnswer === opt.key);
+            } else {
+                isChecked = Array.isArray(savedAnswer) && savedAnswer.includes(opt.key);
+            }
+            
+            const isSelectedClass = isChecked ? 'selected' : '';
+            const inputType = data.question_type === 'SINGLE_CHOICE' ? 'radio' : 'checkbox';
+            const inputName = `opt_${data.id}`;
+            
+            optsHtml += `
+                <label class="tcs-option-label ${isSelectedClass}" onclick="handleOptionClick('${data.id}', '${opt.key}', '${data.question_type}', this)">
+                    <input type="${inputType}" name="${inputName}" value="${opt.key}" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); handleOptionClick('${data.id}', '${opt.key}', '${data.question_type}', this.parentElement)">
+                    <span><strong>${opt.key}.</strong> ${escapeHtml(opt.text)}</span>
+                </label>
+            `;
+        });
+        
+        optsHtml += '</div>';
+        
+        bodyEl.innerHTML = `
+            <div class="tcs-question-text">${escapeHtml(data.question_text)}</div>
+            ${imgHtml}
+            ${optsHtml}
+        `;
+        
+        // Sync button states
+        document.getElementById('tcsPrevBtn').disabled = (currentIndex === 0);
+        document.getElementById('tcsSaveNextBtn').textContent = (currentIndex === totalQuestions - 1) ? 'Save & Finish' : 'Save & Next \u2192';
+    }
+    
+    // Escape standard HTML tags
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+    
+    // Save selected answer state to local storage answers dictionary
+    function handleOptionClick(q_id, optionKey, questionType, labelEl) {
+        const container = labelEl.parentElement;
+        
+        if (questionType === 'SINGLE_CHOICE') {
+            container.querySelectorAll('.tcs-option-label').forEach(lbl => {
+                lbl.classList.remove('selected');
+                lbl.querySelector('input').checked = false;
+            });
+            
+            labelEl.classList.add('selected');
+            labelEl.querySelector('input').checked = true;
+            answers[q_id] = optionKey;
+        } else {
+            // Checkbox multi-select logic
+            const input = labelEl.querySelector('input');
+            
+            // Toggle selection
+            input.checked = !input.checked;
+            
+            if (input.checked) {
+                labelEl.classList.add('selected');
+                if (!Array.isArray(answers[q_id])) {
+                    answers[q_id] = [];
+                }
+                if (!answers[q_id].includes(optionKey)) {
+                    answers[q_id].push(optionKey);
+                }
+            } else {
+                labelEl.classList.remove('selected');
+                if (Array.isArray(answers[q_id])) {
+                    answers[q_id] = answers[q_id].filter(k => k !== optionKey);
+                    if (answers[q_id].length === 0) {
+                        delete answers[q_id];
+                    }
+                }
+            }
+        }
+        
+        updatePaletteAndStats();
+    }
+    
+    // Clear responses for the current question
+    function clearResponse() {
+        const q_id = questionIds[currentIndex];
+        delete answers[q_id];
+        
+        // Re-render UI choices
+        const container = document.querySelector('.tcs-options-container');
+        if (container) {
+            container.querySelectorAll('.tcs-option-label').forEach(lbl => {
+                lbl.classList.remove('selected');
+                lbl.querySelector('input').checked = false;
+            });
+        }
+        
+        updatePaletteAndStats();
+    }
+    
+    // Flag current question as Marked for Review and move next
+    function markForReview() {
+        markedForReview.add(currentIndex);
+        updatePaletteAndStats();
+        
+        // Auto navigate to the next question
+        if (currentIndex < totalQuestions - 1) {
+            loadQuestion(currentIndex + 1);
+        }
+    }
+    
+    // Save current selection and move to the next question
+    function saveAndNext() {
+        // Remove marked for review once they explicitly click Save & Next
+        markedForReview.delete(currentIndex);
+        
+        const q_id = questionIds[currentIndex];
+        // Ensure that if they didn't pick any option, it stays unselected
+        
+        updatePaletteAndStats();
+        
+        if (currentIndex < totalQuestions - 1) {
+            loadQuestion(currentIndex + 1);
+        } else {
+            // Last question, open confirmation submit modal
+            openConfirmationModal();
+        }
+    }
+    
+    // Move previous or next based on standard pagination buttons
+    function navigateQuestion(dir) {
+        const target = currentIndex + dir;
+        if (target >= 0 && target < totalQuestions) {
+            loadQuestion(target);
+        }
+    }
+    
+    // Jump directly to an index when clicked on the grid palette
+    function jumpToQuestion(idx) {
+        loadQuestion(idx);
+    }
+    
+    // Palette rendering & Stats calculator
+    function updatePaletteAndStats() {
+        let countAnswered = 0;
+        let countNotAnswered = 0;
+        let countMarked = markedForReview.size;
+        
+        for (let i = 0; i < totalQuestions; i++) {
+            const q_id = questionIds[i];
+            const box = document.getElementById(`palette-box-${i}`);
+            if (!box) continue;
+            
+            // Clean styles
+            box.className = 'tcs-palette-box';
+            
+            const hasAnswer = (answers[q_id] !== undefined && (!Array.isArray(answers[q_id]) || answers[q_id].length > 0));
+            
+            if (i === currentIndex) {
+                box.classList.add('active-palette');
+            }
+            
+            if (markedForReview.has(i)) {
+                box.classList.add('marked-for-review');
+            } else if (hasAnswer) {
+                box.classList.add('answered');
+                countAnswered++;
+            } else if (visited.has(i)) {
+                box.classList.add('visited');
+                countNotAnswered++;
+            } else {
+                box.classList.add('not-visited');
+            }
+        }
+        
+        const countNotVisited = totalQuestions - visited.size;
+        
+        // Update Legend Statistics
+        document.getElementById('statAnswered').textContent = countAnswered;
+        document.getElementById('statNotAnswered').textContent = countNotAnswered;
+        document.getElementById('statNotVisited').textContent = countNotVisited;
+        document.getElementById('statMarked').textContent = countMarked;
+        
+        // Update summary tables in modal
+        document.getElementById('sumAnswered').textContent = countAnswered;
+        document.getElementById('sumNotAnswered').textContent = countNotAnswered;
+        document.getElementById('sumNotVisited').textContent = countNotVisited;
+        document.getElementById('sumMarked').textContent = countMarked;
+    }
+    
+    // Open Confirmation Dialog
+    function openConfirmationModal() {
+        openTcsModal('submitConfirmModal');
+    }
+    
+    // Process answers and submit exam form
+    function forceSubmitExam() {
+        // Disable warning hooks
+        testStarted = false;
+        
+        // Calculate Time Taken
+        const totalSecsTaken = elapsedSeconds;
+        const minsTaken = Math.floor(totalSecsTaken / 60);
+        const secsTaken = totalSecsTaken % 60;
+        const timeTakenString = `${minsTaken} mins, ${secsTaken} secs`;
+        
+        const form = document.getElementById('tcsFinalSubmitForm');
+        document.getElementById('formTimeTaken').value = timeTakenString;
+        
+        // Clear children question options
+        form.querySelectorAll('.dyn-input').forEach(el => el.remove());
+        
+        // Populate form with all selected options
+        questionIds.forEach(q_id => {
+            // Append question_ids hidden input
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'question_ids';
+            idInput.value = q_id;
+            idInput.className = 'dyn-input';
+            form.appendChild(idInput);
+            
+            const savedAns = answers[q_id];
+            if (savedAns !== undefined) {
+                if (Array.isArray(savedAns)) {
+                    // Checkbox options
+                    savedAns.forEach(val => {
+                        const optInput = document.createElement('input');
+                        optInput.type = 'hidden';
+                        optInput.name = `q_${q_id}`;
+                        optInput.value = val;
+                        optInput.className = 'dyn-input';
+                        form.appendChild(optInput);
+                    });
+                } else {
+                    // Radio options
+                    const optInput = document.createElement('input');
+                    optInput.type = 'hidden';
+                    optInput.name = `q_${q_id}`;
+                    optInput.value = savedAns;
+                    optInput.className = 'dyn-input';
+                    form.appendChild(optInput);
+                }
+            }
+        });
+        
+        // Close overlay locks
+        document.body.classList.remove('in-exam');
+        
+        // Attempt exit fullscreen if still active
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        }
+        
+        // Submit
+        form.submit();
+    }
 </script>
 {% endblock %}

@@ -144,3 +144,7 @@ LOGOUT_REDIRECT_URL = 'home'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Number of questions per mock test. Set to None to fetch all available questions.
+QUESTIONS_PER_TEST = None
+

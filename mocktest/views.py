@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.conf import settings
 from question_manager.models import Question
 from dashboard.models import TestAttempt
 import random
@@ -16,27 +18,36 @@ def summary_view(request):
     topics_breakdown = []
     total_q = 0
     
+    # Get configured questions per test from settings
+    questions_per_test = getattr(settings, 'QUESTIONS_PER_TEST', None)
+    
     if exam_type == 'full':
-        topics_weight = {
-            'Automation': 12, 'Collaboration': 9, 'DB & Security': 12,
-            'Instance': 9, 'Integration': 9, 'Platform': 9
-        }
-        for topic, target in topics_weight.items():
-            actual = min(Question.objects.filter(topic=topic).count(), target)
-            topics_breakdown.append({'topic': topic, 'count': actual})
-            total_q += actual
+        topics = ['Automation', 'Collaboration', 'DB & Security', 'Instance', 'Integration', 'Platform']
+        all_qs = Question.objects.all()
+        total_available = all_qs.count()
+        
+        if questions_per_test:
+            total_q = min(total_available, questions_per_test)
+        else:
+            total_q = total_available
+            
+        for topic in topics:
+            topic_count = Question.objects.filter(topic=topic).count()
+            if topic_count > 0:
+                topics_breakdown.append({'topic': topic, 'count': topic_count})
     elif exam_type == 'random':
-        actual = min(Question.objects.count(), 20)
-        topics_breakdown.append({'topic': 'Random Mix', 'count': actual})
-        total_q += actual
+        total_available = Question.objects.count()
+        total_q = min(total_available, 20)
+        topics_breakdown.append({'topic': 'Random Mix', 'count': total_q})
     else:
-        actual = min(Question.objects.filter(topic=exam_type).count(), 20)
-        topics_breakdown.append({'topic': exam_type, 'count': actual})
-        total_q += actual
+        # Topic specific
+        total_available = Question.objects.filter(topic=exam_type).count()
+        total_q = min(total_available, 20)
+        topics_breakdown.append({'topic': exam_type, 'count': total_q})
 
     if total_q == 0:
         from django.contrib import messages
-        messages.error(request, "No questions available for this topic.")
+        messages.error(request, "No questions available for this selection.")
         return redirect('mocktest:index')
         
     return render(request, 'mocktest/summary.html', {
@@ -51,38 +62,59 @@ def start_test(request):
     exam_type = request.GET.get('exam_type', 'full')
     questions = []
     
+    # Get configured questions per test from settings
+    questions_per_test = getattr(settings, 'QUESTIONS_PER_TEST', None)
+    
     if exam_type == 'full':
-        # Weightage: 60 total questions
-        # Automation 20% (12), Collaboration 15% (9), DB & Security 20% (12)
-        # Instance 15% (9), Integration 15% (9), Platform 15% (9)
-        topics_weight = {
-            'Automation': 12,
-            'Collaboration': 9,
-            'DB & Security': 12,
-            'Instance': 9,
-            'Integration': 9,
-            'Platform': 9
-        }
-        
-        for topic, count in topics_weight.items():
-            topic_qs = list(Question.objects.filter(topic=topic))
-            questions.extend(random.sample(topic_qs, min(len(topic_qs), count)))
-            
+        all_qs = list(Question.objects.all())
+        if questions_per_test:
+            questions = random.sample(all_qs, min(len(all_qs), questions_per_test))
+        else:
+            questions = all_qs
         random.shuffle(questions)
-        
     elif exam_type == 'random':
         all_qs = list(Question.objects.all())
         questions = random.sample(all_qs, min(len(all_qs), 20))
+        random.shuffle(questions)
     else:
         # Topic specific
         topic_qs = list(Question.objects.filter(topic=exam_type))
         questions = random.sample(topic_qs, min(len(topic_qs), 20))
+        random.shuffle(questions)
+
+    # Lightweight list of question IDs to optimize load times for 400+ questions
+    question_ids = [q.id for q in questions]
 
     return render(request, 'mocktest/mocktest.html', {
-        'questions': questions,
+        'question_ids': question_ids,
         'timer_minutes': len(questions),
         'exam_type': exam_type,
+        'total_questions': len(questions),
     })
+
+@login_required
+def get_question_api(request):
+    q_id = request.GET.get('id')
+    if not q_id:
+        return JsonResponse({'error': 'No question ID provided'}, status=400)
+    
+    try:
+        q = Question.objects.get(id=q_id)
+        image_url = q.question_image.url if q.question_image else ''
+        return JsonResponse({
+            'id': q.id,
+            'topic': q.topic,
+            'question_type': q.question_type,
+            'question_text': q.question_text,
+            'option_a': q.option_a,
+            'option_b': q.option_b,
+            'option_c': q.option_c,
+            'option_d': q.option_d,
+            'option_e': q.option_e or '',
+            'image_url': image_url,
+        })
+    except Question.DoesNotExist:
+        return JsonResponse({'error': 'Question not found'}, status=404)
 
 def submit_test(request):
     if request.method == 'POST':
@@ -92,6 +124,7 @@ def submit_test(request):
 
         question_ids = request.POST.getlist('question_ids')
         exam_type = request.POST.get('exam_type', 'CSA Mock Exam')
+        time_taken = request.POST.get('time_taken', 'N/A')
         
         test_name_mapping = {
             'full': 'Full Syllabus Mock Test',
@@ -145,6 +178,8 @@ def submit_test(request):
             'results':    results,
             'passed':     percentage >= 70,
             'test_name':  test_name,
+            'time_taken': time_taken,
         })
 
     return redirect('mocktest:index')
+
