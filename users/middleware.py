@@ -36,3 +36,37 @@ class SecurityMiddleware(MiddlewareMixin):
                 pass
         
         return None
+
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.conf import settings
+
+class LoginRequiredMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        # Allow authenticated users to proceed
+        if request.user.is_authenticated:
+            return None
+
+        path = request.path_info
+        
+        # Exact matching login/auth urls
+        exempt_urls = [
+            reverse('users:login'),
+            reverse('users:register'),
+            reverse('users:otp_verify'),
+        ]
+        
+        if path in exempt_urls:
+            return None
+            
+        # Match administrative dashboard urls
+        if path.startswith('/admin/'):
+            return None
+            
+        # Match static/media files
+        if path.startswith(settings.STATIC_URL) or (settings.MEDIA_URL and path.startswith(settings.MEDIA_URL)):
+            return None
+
+        # Redirect unauthenticated requests to the login view
+        return redirect(reverse('users:login'))
+

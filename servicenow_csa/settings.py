@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'users.middleware.RoleMiddleware',
     'users.middleware.SecurityMiddleware',
+    'users.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'servicenow_csa.urls'

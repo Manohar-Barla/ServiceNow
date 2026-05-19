@@ -22,10 +22,15 @@ class MockTestViewsTestCase(TestCase):
         )
 
     def test_unauthenticated_redirection(self):
-        """Verify summary_view and start_test redirect to login if unauthenticated."""
+        """Verify home, summary_view, and start_test redirect to login if unauthenticated."""
+        home_url = '/'
         summary_url = reverse('mocktest:summary')
         start_url = reverse('mocktest:start')
         
+        response0 = self.client.get(home_url)
+        self.assertEqual(response0.status_code, 302)
+        self.assertIn('/login', response0.url)
+
         response1 = self.client.get(summary_url)
         self.assertEqual(response1.status_code, 302)
         self.assertIn('/login', response1.url)
