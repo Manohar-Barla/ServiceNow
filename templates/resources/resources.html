@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Study Resources - ServiceNow CSA Prep{% endblock %}
+
+{% block extra_head %}
+<style>
+    .resource-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+    .resource-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .resource-card h3 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+    .resource-info {
+        margin-bottom: 1.5rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    .download-btn {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        background: var(--primary);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+    .download-btn:hover {
+        background: var(--secondary);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: var(--white);
+        border-radius: 15px;
+        color: #888;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Study Materials & Resources</h1>
+    <p>Download study guides, PDF notes, and official documentation.</p>
+</div>
+
+<div class="scroll-box">
+    {% if resources %}
+        <div class="resource-grid">
+            {% for resource in resources %}
+                <div class="resource-card">
+                    <div>
+                        <h3>{{ resource.title }}</h3>
+                        <p class="resource-info">{{ resource.description|truncatewords:20 }}</p>
+                    </div>
+                    <a href="{{ resource.file.url }}" class="download-btn" target="_blank">View / Download PDF</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No resources available yet. Check back soon!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz: {{ topic_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .q-nav {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 0.6rem; font-size: 0.8rem;
+        color: var(--muted); flex-shrink: 0;
+    }
+    .q-counter { font-weight: 700; color: var(--primary); }
+    .q-progress {
+        flex: 1; height: 4px; background: var(--border);
+        border-radius: 4px; margin: 0 0.8rem; overflow: hidden;
+    }
+    .q-progress-fill {
+        height: 100%; background: var(--accent);
+        border-radius: 4px; transition: width 0.3s;
+    }
+    .nav-btns { display: flex; gap: 0.4rem; }
+    .nav-btn {
+        padding: 0.35rem 0.8rem; border: 1px solid var(--border);
+        border-radius: 5px; background: var(--white);
+        cursor: pointer; font-size: 0.8rem; font-weight: 600;
+        color: var(--primary); transition: all 0.2s;
+    }
+    .nav-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .nav-btn.submit-nav { background: var(--accent); color: var(--primary); border-color: var(--accent); }
+
+    .question-slide { display: none; }
+    .question-slide.active { display: flex; flex-direction: column; height: 100%; }
+
+    .option-label {
+        display: flex; align-items: flex-start; gap: 0.5rem;
+        padding: 0.55rem 0.8rem; border: 1px solid var(--border);
+        border-radius: 6px; margin-bottom: 0.4rem;
+        cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+    }
+    .option-label:hover:not([data-locked]) { border-color: var(--accent); background: rgba(212,175,55,0.05); }
+    .option-label.selected  { border-color: var(--accent); background: rgba(212,175,55,0.1); }
+    .option-label.correct   { background: #d4edda; border-color: #28a745; }
+    .option-label.incorrect { background: #f8d7da; border-color: #dc3545; }
+    
+    .score-banner {
+        background: var(--primary); color: var(--white);
+        padding: 0.7rem 1.2rem; border-radius: 8px; text-align: center;
+        margin-bottom: 0.6rem; flex-shrink: 0;
+    }
+    .expl-btn {
+        margin-top: 0.5rem; padding: 0.3rem 0.8rem;
+        transition: all 0.2s; align-self: flex-start; font-size: 0.75rem; font-weight: 600;
+        background: #f8f9fa; border: 1px solid #ddd;
+        border-radius: 5px; cursor: pointer; color: var(--primary);
+    }
+    .expl-btn:hover { background: var(--accent); border-color: var(--accent); }
+
+    .quiz-area { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .quiz-scroll { flex: 1; overflow-y: auto; padding-right: 4px; }
+    .quiz-scroll::-webkit-scrollbar { width: 5px; }
+    .quiz-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    
+    .review-answer {
+        margin-top: 0.5rem; font-size: 0.85rem;
+        padding: 0.5rem; background: #f8f9fa; border-radius: 5px; border-left: 3px solid var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if results %}
+{% with total_q=questions|length correct_count=results|length %}
+<div class="score-banner" style="flex-shrink:0;">
+    <strong>Quiz Complete</strong>
+    <div style="opacity:0.85; margin-top:0.4rem;">
+        Review your answers below &mdash;
+        <a href="{% url 'practice:index' %}" style="color:var(--accent); font-weight:700;">Try another quiz</a>
+    </div>
+</div>
+{% endwith %}
+{% else %}
+<div class="hero" style="flex-shrink:0;">
+    <h1>{{ topic_name }} Quiz</h1>
+    <p>Answer all questions, then submit for your score.</p>
+</div>
+{% endif %}
+
+<div class="q-nav" style="flex-shrink:0;">
+    <span class="q-counter" id="qCounter">1 / {{ questions|length }}</span>
+    <div class="q-progress"><div class="q-progress-fill" id="qProg"></div></div>
+    <div class="nav-btns">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592;</button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)" {% if questions|length <= 1 %}disabled{% endif %}>&#8594;</button>
+        {% if not results %}
+        <button class="nav-btn submit-nav" onclick="document.getElementById('qForm').submit()">Submit &#10003;</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="quiz-area">
+<div class="quiz-scroll">
+<form id="qForm" method="POST" data-total="{{ questions|length }}">
+    {% csrf_token %}
+    {% for q in questions %}
+    <div class="question-slide {% if forloop.first %}active{% endif %}" id="slide-{{ forloop.counter0 }}">
+        <div class="question-card">
+            <div style="margin-bottom: 0.5rem;">
+                <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ q.get_question_type_display }}</span>
+            </div>
+            {% if q.question_image %}
+            <div style="margin-bottom: 1rem;">
+                <img src="{{ q.question_image.url }}" style="max-height: 200px; max-width: 100%; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+            {% endif %}
+            
+            <p class="question-text">{{ q.question_text }}</p>
+            <div class="options-grid" id="grid-{{ forloop.counter0 }}">
+                {% if results %}
+                    {# Show Results View #}
+                    {% for res in results %}{% if res.question.id == q.id %}
+                        {% if q.question_type == 'SINGLE_CHOICE' %}
+                            <label class="option-label" data-locked><input type="radio" disabled {% if 'A' in res.selected %}checked{% endif %}> A. {{ q.option_a }}</label>
+                            <label class="option-label" data-locked><input type="radio" disabled {% if 'B' in res.selected %}checked{% endif %}> B. {{ q.option_b }}</label>
+                            {% if q.option_c %}<label class="option-label" data-locked><input type="radio" disabled {% if 'C' in res.selected %}checked{% endif %}> C. {{ q.option_c }}</label>{% endif %}
+                            {% if q.option_d %}<label class="option-label" data-locked><input type="radio" disabled {% if 'D' in res.selected %}checked{% endif %}> D. {{ q.option_d }}</label>{% endif %}
+                            {% if q.option_e %}<label class="option-label" data-locked><input type="radio" disabled {% if 'E' in res.selected %}checked{% endif %}> E. {{ q.option_e }}</label>{% endif %}
+                        {% else %}
+                            <label class="option-label" data-locked><input type="checkbox" disabled {% if 'A' in res.selected %}checked{% endif %}> A. {{ q.option_a }}</label>
+                            <label class="option-label" data-locked><input type="checkbox" disabled {% if 'B' in res.selected %}checked{% endif %}> B. {{ q.option_b }}</label>
+                            {% if q.option_c %}<label class="option-label" data-locked><input type="checkbox" disabled {% if 'C' in res.selected %}checked{% endif %}> C. {{ q.option_c }}</label>{% endif %}
+                            {% if q.option_d %}<label class="option-label" data-locked><input type="checkbox" disabled {% if 'D' in res.selected %}checked{% endif %}> D. {{ q.option_d }}</label>{% endif %}
+                            {% if q.option_e %}<label class="option-label" data-locked><input type="checkbox" disabled {% if 'E' in res.selected %}checked{% endif %}> E. {{ q.option_e }}</label>{% endif %}
+                        {% endif %}
+                        
+                        <div class="review-answer">
+                            Your answer: <strong>{{ res.selected }}</strong>
+                            {% if res.is_correct %}
+                                <span style="color:#28a745; font-weight:700;"> ✓</span>
+                            {% else %}
+                                <span style="color:#dc3545; font-weight:700;"> ✗</span>
+                                &mdash; Correct: <strong>{{ res.correct }}</strong>
+                            {% endif %}
+                        </div>
+                        
+                        {% if q.explanation %}
+                        <button type="button" class="expl-btn" onclick="openExplModal('{{ q.question_text|escapejs }}', '{{ q.explanation|escapejs }}')">💡 View Explanation</button>
+                        {% endif %}
+                    {% endif %}{% endfor %}
+                {% else %}
+                    {# Show Active Quiz Form #}
+                    {% if q.question_type == 'SINGLE_CHOICE' %}
+                        <label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q_{{ q.id }}" value="A"> A. {{ q.option_a }}</label>
+                        <label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q_{{ q.id }}" value="B"> B. {{ q.option_b }}</label>
+                        {% if q.option_c %}<label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q_{{ q.id }}" value="C"> C. {{ q.option_c }}</label>{% endif %}
+                        {% if q.option_d %}<label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q_{{ q.id }}" value="D"> D. {{ q.option_d }}</label>{% endif %}
+                        {% if q.option_e %}<label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q_{{ q.id }}" value="E"> E. {{ q.option_e }}</label>{% endif %}
+                    {% else %}
+                        <label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q_{{ q.id }}" value="A"> A. {{ q.option_a }}</label>
+                        <label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q_{{ q.id }}" value="B"> B. {{ q.option_b }}</label>
+                        {% if q.option_c %}<label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q_{{ q.id }}" value="C"> C. {{ q.option_c }}</label>{% endif %}
+                        {% if q.option_d %}<label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q_{{ q.id }}" value="D"> D. {{ q.option_d }}</label>{% endif %}
+                        {% if q.option_e %}<label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q_{{ q.id }}" value="E"> E. {{ q.option_e }}</label>{% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</form>
+</div>
+</div>
+
+<div class="modal-overlay" id="explModal" role="dialog" aria-modal="true" aria-labelledby="explModalTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="explModalTitle">💡 Explanation</h2>
+            <button class="modal-close" onclick="closeModal('explModal')" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="expl-modal-q" id="explModalQuestion"></p>
+            <p class="expl-modal-body" id="explModalText"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-auth" onclick="closeModal('explModal')">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const total = parseInt(document.getElementById('qForm').dataset.total, 10);
+let current = 0;
+if (total > 0) document.getElementById('qProg').style.width = (1 / total * 100) + '%';
+
+function navigate(dir) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    current = Math.max(0, Math.min(total - 1, current + dir));
+    document.getElementById('slide-' + current).classList.add('active');
+    document.getElementById('qCounter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('qProg').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+}
+
+function selectOption(label, type) {
+    const grid = label.parentElement;
+    if (type === 'radio') {
+        grid.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+        label.classList.add('selected');
+    } else {
+        setTimeout(() => {
+            if (label.querySelector('input').checked) label.classList.add('selected');
+            else label.classList.remove('selected');
+        }, 10);
+    }
+}
+
+function openExplModal(question, explanation) {
+    document.getElementById('explModalQuestion').textContent = question;
+    document.getElementById('explModalText').textContent = explanation || 'No explanation provided.';
+    openModal('explModal');
+}
+</script>
+{% endblock %}

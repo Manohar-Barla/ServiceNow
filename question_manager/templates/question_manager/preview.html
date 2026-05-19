@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Question Manager - Preview{% endblock %}
+
+{% block content %}
+<div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>Preview Question</h2>
+    <div>
+        <a href="{% url 'question_manager:edit_question' question.pk %}" class="btn-auth" style="padding: 0.5rem 1rem; margin-right: 0.5rem; background: #ffc107; color: #000;">Edit</a>
+        <a href="{% url 'question_manager:dashboard' %}" class="btn-auth" style="padding: 0.5rem 1rem; background: #6c757d;">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="card" style="padding: 2rem; max-height: 75vh; overflow-y: auto;">
+    <div style="margin-bottom: 1.5rem;">
+        <span style="background: #e9ecef; padding: 0.3rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;">Topic: {{ question.topic }}</span>
+        <span style="background: #e9ecef; padding: 0.3rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500; margin-right: 0.5rem;">Type: {{ question.get_question_type_display }}</span>
+        {% if question.question_number %}
+        <span style="background: #e9ecef; padding: 0.3rem 0.6rem; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">Q: {{ question.question_number }}</span>
+        {% endif %}
+    </div>
+
+    <h3 style="margin-bottom: 1rem;">{{ question.question_text }}</h3>
+
+    {% if question.question_image %}
+    <div style="margin-bottom: 1.5rem;">
+        <img src="{{ question.question_image.url }}" alt="Question Image" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid #ddd;">
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 1.5rem; padding-left: 1rem;">
+        <div style="margin-bottom: 0.5rem;"><strong>A.</strong> {{ question.option_a }}</div>
+        <div style="margin-bottom: 0.5rem;"><strong>B.</strong> {{ question.option_b }}</div>
+        {% if question.option_c %}<div style="margin-bottom: 0.5rem;"><strong>C.</strong> {{ question.option_c }}</div>{% endif %}
+        {% if question.option_d %}<div style="margin-bottom: 0.5rem;"><strong>D.</strong> {{ question.option_d }}</div>{% endif %}
+        {% if question.option_e %}<div style="margin-bottom: 0.5rem;"><strong>E.</strong> {{ question.option_e }}</div>{% endif %}
+    </div>
+
+    <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; border: 1px solid #c3e6cb; margin-bottom: 1rem;">
+        <strong>Correct Answer(s):</strong> {{ question.correct_answers }}
+    </div>
+
+    {% if question.explanation %}
+    <div style="background: #e2e3e5; color: #383d41; padding: 1rem; border-radius: 8px; border: 1px solid #d6d8db;">
+        <strong>Explanation:</strong><br>
+        {{ question.explanation }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

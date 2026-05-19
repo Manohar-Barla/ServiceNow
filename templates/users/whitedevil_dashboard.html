@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}WhiteDevil Dashboard - ServiceNow CSA{% endblock %}
+
+{% block extra_head %}
+<style>
+    .admin-container {
+        display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow: hidden;
+    }
+    .admin-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; overflow: hidden;
+    }
+    .admin-card {
+        background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+        padding: 1rem; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .admin-card h3 { margin-bottom: 0.8rem; border-bottom: 2px solid var(--border); padding-bottom: 0.4rem; font-size: 1rem; color: var(--primary); }
+    .table-container { flex: 1; overflow-y: auto; font-size: 0.85rem; }
+    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .admin-table th, .admin-table td { padding: 0.5rem; border-bottom: 1px solid #eee; vertical-align: middle; }
+    .admin-table th { background: #f8f9fa; position: sticky; top: 0; }
+    .badge { padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="hero" style="flex-shrink:0; padding: 1rem;">
+        <h1 style="font-size: 1.5rem;">😈 WhiteDevil Monitoring Panel</h1>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Unrestricted God-Mode Control & Real-time Live Security Feed.</p>
+    </div>
+
+    <!-- Active Sessions & Pending Approvals -->
+    <div class="admin-grid" style="grid-template-columns: 1.2fr 0.8fr;">
+        <!-- Active Live Sessions -->
+        <div class="admin-card">
+            <h3>🟢 Live Active Sessions</h3>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>IP Address</th>
+                            <th>Device Details</th>
+                            <th>Login Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in active_profiles %}
+                        <tr>
+                            <td><strong>{{ profile.user.username }}</strong><br><small style="color:var(--muted)">{{ profile.role }}</small></td>
+                            <td><code>{{ profile.last_ip|default:"-" }}</code></td>
+                            <td title="{{ profile.device_details }}"><small>{{ profile.device_details|truncatechars:35 }}</small></td>
+                            <td><small>{{ profile.last_login_time|date:"M d, H:i" }}</small></td>
+                            <td>
+                                <div style="display:flex; gap:0.3rem;">
+                                    <a href="{% url 'users:admin_reset_device' profile.user.id %}" class="btn-auth" style="padding:0.25rem 0.5rem; font-size:0.75rem; background:#f0ad4e;" onclick="return confirm('Reset device lock for this user?');">Reset Lock</a>
+                                    <a href="{% url 'users:admin_terminate_session' profile.user.id %}" class="btn-auth" style="padding:0.25rem 0.5rem; font-size:0.75rem; background:#d9534f;" onclick="return confirm('Terminate this session instantly?');">Terminate</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" style="text-align:center; color:var(--muted);">No active logged-in users.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pending Login Approvals -->
+        <div class="admin-card">
+            <h3>🔑 Pending Login Approvals (OTP)</h3>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>IP / Device</th>
+                            <th>OTP</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attempt in pending_logins %}
+                        <tr>
+                            <td><strong>{{ attempt.user.username }}</strong><br><small>{{ attempt.created_at|date:"H:i:s" }}</small></td>
+                            <td><code>{{ attempt.ip_address }}</code><br><small>{{ attempt.device_details|truncatechars:20 }}</small></td>
+                            <td><strong style="color: var(--accent); font-size:1.1rem;">{{ attempt.otp_code }}</strong></td>
+                            <td>
+                                <a href="{% url 'users:admin_approve_login' attempt.id %}" class="btn-auth" style="padding:0.25rem 0.5rem; font-size:0.75rem; background:#5cb85c;">Approve</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="text-align:center; color:var(--muted);">No pending login attempts.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login History & Action Logs -->
+    <div class="admin-grid">
+        <!-- Login History Feed -->
+        <div class="admin-card">
+            <h3>📜 Login History Log</h3>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in login_history %}
+                        <tr>
+                            <td><small>{{ log.created_at|date:"M d, H:i:s" }}</small></td>
+                            <td><strong>{{ log.user.username }}</strong></td>
+                            <td>
+                                {% if log.status == 'SUCCESS' %}
+                                    <span class="badge badge-success">Success</span>
+                                {% elif log.status == 'DEVICE_MISMATCH' %}
+                                    <span class="badge badge-danger">Device Mismatch</span>
+                                {% else %}
+                                    <span class="badge badge-warning">{{ log.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ log.ip_address }}</code></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="text-align:center; color:var(--muted);">No login records.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Admin Action Logs -->
+        <div class="admin-card">
+            <h3>🛡️ Admin Action Logs</h3>
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Target</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action in action_logs %}
+                        <tr>
+                            <td><small>{{ action.timestamp|date:"M d, H:i:s" }}</small></td>
+                            <td><strong>{{ action.target_user.username }}</strong></td>
+                            <td><span class="badge" style="background:#e6f2ff; color:#0066cc;">{{ action.action }}</span></td>
+                            <td><small>{{ action.details }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="text-align:center; color:var(--muted);">No admin actions logged yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

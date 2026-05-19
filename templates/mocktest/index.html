@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Mock Test - ServiceNow CSA Prep{% endblock %}
+
+{% block content %}
+<div class="hero" style="flex-shrink:0;">
+    <h1>CSA Mock Examination</h1>
+    <p>Simulate the real Certified System Administrator exam experience.</p>
+</div>
+
+<div class="card" style="text-align:center; padding: 2rem; margin-bottom: 1rem; flex-shrink:0;">
+    <h2 style="margin-bottom: 0.5rem;">Ready to begin?</h2>
+    <p style="color: var(--muted); margin-bottom: 1.5rem;">
+        Choose your mock test mode. Full mock test contains 60 weighted questions.
+    </p>
+    
+    <form id="startExamForm" action="{% url 'mocktest:summary' %}" method="GET">
+        <select name="exam_type" style="padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 1.5rem; width: 100%; max-width: 300px; font-size: 1rem;">
+            <option value="full">Full Syllabus Mock Test</option>
+            <option value="random">Random Mix</option>
+            <option value="Automation">Topic: Automation</option>
+            <option value="Collaboration">Topic: Collaboration</option>
+            <option value="DB & Security">Topic: DB & Security</option>
+            <option value="Instance">Topic: Instance</option>
+            <option value="Integration">Topic: Integration</option>
+            <option value="Platform">Topic: Platform</option>
+        </select>
+        
+        <br>
+        {% if user.is_authenticated %}
+            <button type="submit" class="btn-auth" style="font-size: 1.1rem; padding: 0.8rem 2rem;">Proceed to Summary</button>
+        {% else %}
+            <button type="button" class="btn-auth" onclick="openModal('loginModal')" style="font-size: 1.1rem; padding: 0.8rem 2rem;">Login to Start Test</button>
+        {% endif %}
+    </form>
+</div>
+
+<div class="scroll-box">
+    <div style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.5px;
+                color:var(--muted); margin-bottom:0.6rem; font-weight:700;">
+        Recent Test Attempts
+    </div>
+    {% if recent_attempts %}
+    <table class="attempts-table">
+        <thead>
+            <tr>
+                <th>Candidate</th>
+                <th>Test</th>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attempt in recent_attempts %}
+            <tr>
+                <td><strong>{{ attempt.user.username }}</strong></td>
+                <td>{{ attempt.test_name }}</td>
+                <td>{{ attempt.date|date:"M d, H:i" }}</td>
+                <td>
+                    <span class="score-badge {% if attempt.percentage >= 70 %}bg-pass{% else %}bg-fail{% endif %}">
+                        {{ attempt.percentage|floatformat:1 }}%
+                    </span>
+                </td>
+                <td>{% if attempt.percentage >= 70 %}Passed{% else %}Failed{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding: 1.5rem;">
+        <p>No attempts have been made yet. Be the first!</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

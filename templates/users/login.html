@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Login - ServiceNow CSA Prep{% endblock %}
+{% block extra_js %}
+<script>
+    // Login is now a modal — open it immediately if user lands on this page directly
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof openModal === 'function') openModal('loginModal');
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>Welcome Back</h1>
+    <p>Use the <strong>Login</strong> button in the top-right corner, or click below.</p>
+    <button class="btn-auth" onclick="openModal('loginModal')" style="margin-top:0.5rem;">Open Login</button>
+</div>
+{% endblock %}

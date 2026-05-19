@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}User Dashboard - ServiceNow CSA Prep{% endblock %}
+
+{% block content %}
+<div class="hero" style="flex-shrink:0;">
+    <h1>Welcome back, {{ user.username }}!</h1>
+    <p>Track your progress and get ready for the ServiceNow CSA exam.</p>
+</div>
+
+<div class="stats-grid" style="flex-shrink:0;">
+    <div class="stat-card">
+        <h2>{{ stats.total_attempts|default:0 }}</h2>
+        <p>Total Attempts</p>
+    </div>
+    <div class="stat-card">
+        <h2>{{ stats.avg_score|default:0|floatformat:1 }}%</h2>
+        <p>Average Score</p>
+    </div>
+    <div class="stat-card">
+        <h2>{% if stats.avg_score >= 70 %}&#10003;{% else %}Study{% endif %}</h2>
+        <p>{% if stats.avg_score >= 70 %}On Track{% else %}Keep Going{% endif %}</p>
+    </div>
+</div>
+
+<div class="scroll-box">
+    <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px;
+                color:var(--muted); margin-bottom:0.4rem; font-weight:700;">
+        Recent Attempts
+    </div>
+    {% if attempts %}
+    <table class="attempts-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Questions</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attempt in attempts %}
+            <tr>
+                <td>{{ attempt.date|date:"M d, Y H:i" }}</td>
+                <td>
+                    <span class="score-badge {% if attempt.percentage >= 70 %}bg-pass{% else %}bg-fail{% endif %}">
+                        {{ attempt.percentage|floatformat:1 }}%
+                    </span>
+                </td>
+                <td>{{ attempt.score }} / {{ attempt.total_questions }}</td>
+                <td>{% if attempt.percentage >= 70 %}Passed{% else %}Failed{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No mock tests taken yet.</p>
+        <a href="{% url 'mocktest:index' %}" class="btn-auth"
+           style="display:inline-block; margin-top:0.8rem;">Start First Mock Test</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

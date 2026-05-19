@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Mock Test Summary - ServiceNow CSA Prep{% endblock %}
+
+{% block content %}
+<div class="card" style="padding: 2rem; max-width: 600px; margin: 0 auto; text-align: center;">
+    <h2 style="margin-bottom: 1.5rem;">Mock Test Summary</h2>
+    
+    <div style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem; text-align: left; border: 1px solid #ddd; margin-bottom: 1.5rem;">
+        <h4 style="margin-bottom: 1rem; color: #333; border-bottom: 2px solid #ccc; padding-bottom: 0.5rem;">Topic Breakdown</h4>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            {% for breakdown in topics_breakdown %}
+            <li style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                <span style="font-weight: 500;">{{ breakdown.topic }}</span>
+                <span style="color: #666;">{{ breakdown.count }} Questions</span>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <div style="border-top: 2px solid #ccc; margin-top: 1rem; padding-top: 1rem; display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; color: #000;">
+            <span>Total Questions:</span>
+            <span>{{ total_q }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; color: #000; margin-top: 0.5rem;">
+            <span>Total Test Time:</span>
+            <span>{{ total_time }} minutes</span>
+        </div>
+    </div>
+    
+    <form id="actualStartForm" action="{% url 'mocktest:start' %}" method="GET">
+        <input type="hidden" name="exam_type" value="{{ exam_type }}">
+        <button type="button" class="btn-auth" onclick="startCountdown()" style="font-size: 1.2rem; padding: 1rem 3rem; width: 100%;">Start Exam Now</button>
+        <a href="{% url 'mocktest:index' %}" style="display: inline-block; margin-top: 1rem; color: #666; text-decoration: none;">&larr; Go Back</a>
+    </form>
+</div>
+
+{# ══ COUNTDOWN OVERLAY ══ #}
+<div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-text" id="cdText">5</div>
+    <div class="countdown-sub">Get Ready...</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function startCountdown() {
+    const overlay = document.getElementById('countdownOverlay');
+    const textEl = document.getElementById('cdText');
+    overlay.classList.add('active');
+    
+    let count = 5;
+    setTimeout(() => textEl.classList.add('pop'), 50);
+    
+    const interval = setInterval(() => {
+        count--;
+        textEl.classList.remove('pop');
+        
+        if (count > 0) {
+            textEl.textContent = count;
+            setTimeout(() => textEl.classList.add('pop'), 50);
+        } else if (count === 0) {
+            textEl.textContent = 'START';
+            setTimeout(() => textEl.classList.add('pop'), 50);
+        } else {
+            clearInterval(interval);
+            document.getElementById('actualStartForm').submit();
+        }
+    }, 1000);
+}
+</script>
+{% endblock %}

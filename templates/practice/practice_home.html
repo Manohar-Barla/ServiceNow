@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Practice Mode - ServiceNow CSA Prep{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Practice by Topic</h1>
+    <p>Choose a specific topic to test your knowledge.</p>
+</div>
+
+<div class="scroll-box">
+    <div class="card-grid">
+        {% for topic in topics %}
+            <div class="card">
+                <h3>{{ topic.name }}</h3>
+                <p><strong>Questions:</strong> {{ topic.count }}</p>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    {% if topic.count > 0 %}
+                    <a href="{% url 'practice:practice_by_topic' topic.id %}" style="flex: 1; padding: 0.5rem; background: var(--secondary); color: var(--white); text-decoration: none; border-radius: 5px; text-align: center; font-size: 0.9rem;">Practice Mode</a>
+                    <a href="{% url 'practice:quiz' topic.id %}" style="flex: 1; padding: 0.5rem; background: var(--accent); color: var(--primary); text-decoration: none; border-radius: 5px; text-align: center; font-size: 0.9rem; font-weight: 600;">Take Quiz</a>
+                    {% else %}
+                    <span style="flex: 1; padding: 0.5rem; background: #eee; color: #999; border-radius: 5px; text-align: center; font-size: 0.9rem;">No Questions</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p>No topics available.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Register - ServiceNow CSA Prep{% endblock %}
+{% block extra_js %}
+<script>
+    // Register is now a modal — open it immediately if user lands on this page directly
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof openModal === 'function') openModal('registerModal');
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>Create Your Account</h1>
+    <p>Use the <strong>Register</strong> button in the top-right corner, or click below.</p>
+    <button class="btn-auth" onclick="openModal('registerModal')" style="margin-top:0.5rem;">Open Registration</button>
+</div>
+{% endblock %}

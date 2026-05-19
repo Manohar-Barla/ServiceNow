@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}OTP Verification - ServiceNow CSA{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 450px; margin: 3rem auto; padding: 2rem; text-align: center;">
+    <h2 style="margin-bottom: 1rem;">🔒 Login Authorization</h2>
+    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        An OTP has been successfully sent to the administrator (**WhiteDevil**) for your verification.<br>
+        Please enter the OTP provided by the administrator below.
+    </p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" style="margin-bottom: 1rem; padding: 0.5rem; border-radius: 5px; background: #f8d7da; color: #721c24;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="otp" placeholder="Enter 6-digit OTP" required maxlength="6" 
+               style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); font-size: 1.2rem; text-align: center; letter-spacing: 5px; margin-bottom: 1.5rem;">
+        
+        <button type="submit" class="btn-auth" style="width: 100%; padding: 0.8rem; font-size: 1rem;">Verify & Authorize Login</button>
+    </form>
+
+    <div style="margin-top: 1.5rem;">
+        <p style="font-size: 0.85rem; color: var(--muted);">
+            Waiting for remote approval? You can also <a href="" style="color: var(--accent); font-weight: bold;">refresh this page</a> to check if WhiteDevil has approved your session directly from the dashboard!
+        </p>
+    </div>
+</div>
+{% endblock %}

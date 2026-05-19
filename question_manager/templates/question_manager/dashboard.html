@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Question Manager - Dashboard{% endblock %}
+
+{% block content %}
+<div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>Question Manager</h2>
+    <div class="header-actions">
+        <a href="{% url 'question_manager:bulk_upload' %}" class="btn-auth" style="padding: 0.5rem 1rem; margin-right: 0.5rem; background: #2c3e50;">Bulk Upload</a>
+        <a href="{% url 'question_manager:add_question' %}" class="btn-auth" style="padding: 0.5rem 1rem;">Add Question</a>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+    <form method="GET" action="{% url 'question_manager:dashboard' %}" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <input type="text" name="search" placeholder="Search questions..." value="{{ search_query|default:'' }}" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+        </div>
+        <div style="width: 150px;">
+            <select name="topic" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="">All Topics</option>
+                {% for val, name in topics %}
+                <option value="{{ val }}" {% if val == current_topic %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="width: 150px;">
+            <select name="type" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="">All Types</option>
+                {% for val, name in types %}
+                <option value="{{ val }}" {% if val == current_type %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-auth" style="padding: 0.5rem 1rem;">Filter</button>
+        <a href="{% url 'question_manager:dashboard' %}" class="btn-auth" style="padding: 0.5rem 1rem; background: #6c757d; text-decoration: none; text-align:center;">Clear</a>
+    </form>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div style="max-height: 60vh; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead style="background: #f8f9fa; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #ddd;">
+                <tr>
+                    <th style="padding: 0.75rem; text-align: left;">#</th>
+                    <th style="padding: 0.75rem; text-align: left;">Topic</th>
+                    <th style="padding: 0.75rem; text-align: left;">Type</th>
+                    <th style="padding: 0.75rem; text-align: left;">Question</th>
+                    <th style="padding: 0.75rem; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 0.75rem;">{{ forloop.counter }}</td>
+                    <td style="padding: 0.75rem;"><span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">{{ q.topic }}</span></td>
+                    <td style="padding: 0.75rem;">{{ q.get_question_type_display }}</td>
+                    <td style="padding: 0.75rem; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ q.question_text }}</td>
+                    <td style="padding: 0.75rem; text-align: center; white-space: nowrap;">
+                        <a href="{% url 'question_manager:preview_question' q.pk %}" style="color: #17a2b8; margin-right: 0.5rem; text-decoration: none;">Preview</a>
+                        <a href="{% url 'question_manager:edit_question' q.pk %}" style="color: #ffc107; margin-right: 0.5rem; text-decoration: none;">Edit</a>
+                        <form method="POST" action="{% url 'question_manager:delete_question' q.pk %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this question?');">
+                            {% csrf_token %}
+                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.9rem;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 2rem; text-align: center; color: #6c757d;">No questions found. Try adjusting your filters or add a new question.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

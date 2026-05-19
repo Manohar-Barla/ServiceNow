@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Practice: {{ topic_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .q-nav {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 0.6rem; font-size: 0.8rem;
+        color: var(--muted); flex-shrink: 0;
+    }
+    .q-counter { font-weight: 700; color: var(--primary); }
+    .q-progress {
+        flex: 1; height: 4px; background: var(--border);
+        border-radius: 4px; margin: 0 0.8rem; overflow: hidden;
+    }
+    .q-progress-fill {
+        height: 100%; background: var(--accent);
+        border-radius: 4px; transition: width 0.3s ease;
+    }
+    .nav-btns { display: flex; gap: 0.5rem; }
+    .nav-btn {
+        padding: 0.35rem 0.9rem; border: 1px solid var(--border);
+        border-radius: 5px; background: var(--white);
+        cursor: pointer; font-size: 0.8rem; font-weight: 600;
+        color: var(--primary); transition: all 0.2s;
+    }
+    .nav-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .question-slide { display: none; }
+    .question-slide.active { display: block; }
+
+    .option-label {
+        display: flex; align-items: flex-start; gap: 0.5rem;
+        padding: 0.5rem 0.8rem; border: 1px solid var(--border);
+        border-radius: 6px; margin-bottom: 0.4rem;
+        cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+    }
+    .option-label:hover { border-color: var(--accent); background: rgba(212,175,55,0.05); }
+    .option-label.correct   { background: #d4edda; border-color: #28a745; }
+    .option-label.incorrect { background: #f8d7da; border-color: #dc3545; }
+    .option-label.revealed  { background: #d4edda; border-color: #28a745; }
+    .option-label.selected  { border-color: var(--accent); background: rgba(212,175,55,0.1); }
+
+    .check-btn {
+        margin-top: 1rem; padding: 0.5rem 1rem;
+        font-size: 0.85rem; font-weight: 600; width: 100%;
+        background: var(--primary); border: none;
+        border-radius: 5px; cursor: pointer; color: var(--white);
+    }
+    .expl-btn {
+        margin-top: 0.5rem; padding: 0.3rem 0.8rem;
+        font-size: 0.75rem; font-weight: 600; width: 100%;
+        background: #f8f9fa; border: 1px solid #ddd;
+        border-radius: 5px; cursor: pointer; color: var(--primary);
+    }
+    .quiz-area { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .quiz-scroll { flex: 1; overflow-y: auto; padding-right: 4px; }
+    .quiz-scroll::-webkit-scrollbar { width: 5px; }
+    .quiz-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'practice:index' %}" class="back-btn">&#8592; Back</a>
+<div class="hero" style="flex-shrink:0;">
+    <h1>{{ topic_name }}</h1>
+    <p>{{ questions.count }} questions &mdash; Practice Mode</p>
+</div>
+
+<div class="q-nav" style="flex-shrink:0;">
+    <span class="q-counter" id="qCounter">1 / {{ questions.count }}</span>
+    <div class="q-progress"><div class="q-progress-fill" id="qProgress"></div></div>
+    <div class="nav-btns">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592; Prev</button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)"
+            {% if questions.count <= 1 %}disabled{% endif %}>Next &#8594;</button>
+    </div>
+</div>
+
+<div class="quiz-area" id="quizArea" data-total="{{ questions.count }}">
+<div class="quiz-scroll">
+{% for question in questions %}
+    <div class="question-slide {% if forloop.first %}active{% endif %}" id="slide-{{ forloop.counter0 }}">
+        <div class="question-card">
+            <div style="margin-bottom: 0.5rem;">
+                <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ question.get_question_type_display }}</span>
+            </div>
+            {% if question.question_image %}
+            <div style="margin-bottom: 1rem;">
+                <img src="{{ question.question_image.url }}" style="max-height: 200px; max-width: 100%; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+            {% endif %}
+            <p class="question-text">{{ question.question_text }}</p>
+            
+            <div class="options-grid" id="grid-{{ forloop.counter0 }}" data-correct="{{ question.correct_answers }}">
+                {% if question.question_type == 'SINGLE_CHOICE' %}
+                    <label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q{{ forloop.counter0 }}" value="A"> A. {{ question.option_a }}</label>
+                    <label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q{{ forloop.counter0 }}" value="B"> B. {{ question.option_b }}</label>
+                    {% if question.option_c %}<label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q{{ forloop.counter0 }}" value="C"> C. {{ question.option_c }}</label>{% endif %}
+                    {% if question.option_d %}<label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q{{ forloop.counter0 }}" value="D"> D. {{ question.option_d }}</label>{% endif %}
+                    {% if question.option_e %}<label class="option-label" onclick="selectOption(this, 'radio')"><input type="radio" name="q{{ forloop.counter0 }}" value="E"> E. {{ question.option_e }}</label>{% endif %}
+                {% else %}
+                    <label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q{{ forloop.counter0 }}" value="A"> A. {{ question.option_a }}</label>
+                    <label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q{{ forloop.counter0 }}" value="B"> B. {{ question.option_b }}</label>
+                    {% if question.option_c %}<label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q{{ forloop.counter0 }}" value="C"> C. {{ question.option_c }}</label>{% endif %}
+                    {% if question.option_d %}<label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q{{ forloop.counter0 }}" value="D"> D. {{ question.option_d }}</label>{% endif %}
+                    {% if question.option_e %}<label class="option-label" onclick="selectOption(this, 'checkbox')"><input type="checkbox" name="q{{ forloop.counter0 }}" value="E"> E. {{ question.option_e }}</label>{% endif %}
+                {% endif %}
+            </div>
+            
+            <div id="action-area-{{ forloop.counter0 }}">
+                <button type="button" class="check-btn" onclick="checkAnswer({{ forloop.counter0 }}, '{{ question.question_text|escapejs }}', '{{ question.explanation|escapejs }}')">Check Answer</button>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <p style="color:var(--muted); text-align:center; padding:2rem;">No questions found for this topic.</p>
+{% endfor %}
+</div>
+</div>
+
+{# ══ EXPLANATION MODAL ══ #}
+<div class="modal-overlay" id="explModal" role="dialog" aria-modal="true" aria-labelledby="explTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="explTitle">💡 Explanation</h2>
+            <button class="modal-close" onclick="closeModal('explModal')" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="expl-modal-q" id="explModalQuestion"></p>
+            <p class="expl-modal-body" id="explModalText"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-auth" onclick="closeModal('explModal')">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const total = parseInt(document.getElementById('quizArea').dataset.total, 10);
+let current = 0;
+if (total > 0) document.getElementById('qProgress').style.width = (1 / total * 100) + '%';
+
+function navigate(dir) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    current = Math.max(0, Math.min(total - 1, current + dir));
+    document.getElementById('slide-' + current).classList.add('active');
+    document.getElementById('qCounter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('qProgress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+}
+
+function selectOption(label, type) {
+    const grid = label.parentElement;
+    if (grid.dataset.answered) return;
+    
+    if (type === 'radio') {
+        grid.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+        label.classList.add('selected');
+    } else {
+        setTimeout(() => {
+            if (label.querySelector('input').checked) label.classList.add('selected');
+            else label.classList.remove('selected');
+        }, 10);
+    }
+}
+
+function checkAnswer(idx, questionText, explanation) {
+    const grid = document.getElementById('grid-' + idx);
+    if (grid.dataset.answered) return;
+    
+    const inputs = Array.from(grid.querySelectorAll('input'));
+    const selectedVals = inputs.filter(i => i.checked).map(i => i.value).sort();
+    
+    if (selectedVals.length === 0) {
+        alert("Please select an answer first.");
+        return;
+    }
+    
+    grid.dataset.answered = '1';
+    grid.querySelectorAll('.option-label').forEach(l => l.style.pointerEvents = 'none');
+    
+    const correctRaw = grid.dataset.correct;
+    const correctVals = correctRaw.split(',').map(s => s.trim()).filter(s => s).sort();
+    
+    const isCorrect = JSON.stringify(selectedVals) === JSON.stringify(correctVals);
+    
+    inputs.forEach(input => {
+        const label = input.parentElement;
+        const isSelected = input.checked;
+        const isActuallyCorrect = correctVals.includes(input.value);
+        
+        if (isSelected && isActuallyCorrect) {
+            label.classList.add('correct');
+        } else if (isSelected && !isActuallyCorrect) {
+            label.classList.add('incorrect');
+        } else if (!isSelected && isActuallyCorrect) {
+            label.classList.add('revealed');
+        }
+    });
+    
+    const actionArea = document.getElementById('action-area-' + idx);
+    actionArea.innerHTML = '';
+    
+    if (explanation) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'expl-btn';
+        btn.textContent = '💡 View Explanation';
+        btn.onclick = function() {
+            openExplModal(questionText, explanation);
+        };
+        actionArea.appendChild(btn);
+    }
+}
+
+function openExplModal(question, explanation) {
+    document.getElementById('explModalQuestion').textContent = question;
+    document.getElementById('explModalText').textContent = explanation || 'No explanation provided.';
+    openModal('explModal');
+}
+</script>
+{% endblock %}

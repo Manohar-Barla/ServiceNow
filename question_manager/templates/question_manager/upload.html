@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Question Manager - Bulk Upload{% endblock %}
+
+{% block content %}
+<div class="content-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>Bulk Upload Questions</h2>
+    <a href="{% url 'question_manager:dashboard' %}" class="btn-auth" style="padding: 0.5rem 1rem; background: #6c757d;">Back to Dashboard</a>
+</div>
+
+<div class="card" style="padding: 2rem; max-width: 600px; margin: 0 auto;">
+    <p style="margin-bottom: 1.5rem; color: #555;">Upload a TXT, PDF, or DOCX file containing multiple questions. Please ensure the file follows the required format.</p>
+    
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-family: monospace; font-size: 0.85rem; border: 1px solid #ddd;">
+        <strong>Format Example:</strong><br><br>
+        Question No: 1<br>
+        Question Type: SINGLE_CHOICE<br>
+        Topic: Collaboration<br>
+        Question:<br>
+        Which tool is used...?<br>
+        Options:<br>
+        A. Connect Chat<br>
+        B. Now Messenger<br>
+        C. User Presence<br>
+        D. Comments<br>
+        Correct Answer:<br>
+        A
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="margin-bottom: 1.5rem;">
+            {{ form.file.label_tag }}<br>
+            {{ form.file }}
+            <small style="display:block; color:#6c757d; margin-top:0.3rem;">{{ form.file.help_text }}</small>
+        </div>
+        <button type="submit" class="btn-auth" style="width: 100%; padding: 0.75rem;">Upload & Parse</button>
+    </form>
+</div>
+{% endblock %}

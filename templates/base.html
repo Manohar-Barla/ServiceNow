@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ServiceNow CSA Prep{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+    <style>
+        .alert         { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; }
+        .alert.success { background: #d4edda; color: #155724; }
+        .alert.error   { background: #f8d7da; color: #721c24; }
+        .alert.warning { background: #fff3cd; color: #856404; }
+        .alert.info    { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="{% url 'home' %}" class="logo">Service<span>Now</span> CSA</a>
+        <div class="user-info">
+            {% if user.is_authenticated %}
+                <span style="color: white; margin-right: 0.5rem;">Hello, {{ user.username }}</span>
+                {% if request.role == 'ADMIN' or request.role == 'DUMMY' %}
+                <a href="{% url 'question_manager:dashboard' %}" class="btn-auth" style="padding: 0.5rem 1rem; margin-right: 0.5rem; background: #2c3e50; text-decoration: none;">Backend</a>
+                {% endif %}
+                {% if user.username == 'WhiteDevil' %}
+                <a href="{% url 'users:whitedevil_dashboard' %}" class="btn-auth" style="padding: 0.5rem 1rem; margin-right: 0.5rem; background: #d9534f; text-decoration: none;">😈 Dashboard</a>
+                {% endif %}
+                <a href="{% url 'users:logout' %}" class="btn-auth" style="padding: 0.5rem 1rem;">Logout</a>
+            {% else %}
+                <button class="btn-auth" id="openLoginBtn"
+                    style="padding: 0.5rem 1rem; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.5);"
+                    onclick="openModal('loginModal')">Login</button>
+                <button class="btn-auth" id="openRegisterBtn"
+                    style="padding: 0.5rem 1rem; margin-left: 0.4rem;"
+                    onclick="openModal('registerModal')">Register</button>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="app-body">
+        <aside class="app-sidebar">
+            <a href="{% url 'home' %}"             class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+            <a href="{% url 'syllabus:index' %}"   class="{% if 'syllabus'   in request.path %}active{% endif %}">Syllabus</a>
+            <a href="{% url 'practice:index' %}"   class="{% if 'practice'   in request.path %}active{% endif %}">Practice</a>
+            <a href="{% url 'mocktest:index' %}"   class="{% if 'mocktest'   in request.path %}active{% endif %}">Mock Test</a>
+            <a href="{% url 'dashboard:index' %}"  class="{% if 'dashboard'  in request.path %}active{% endif %}">Dashboard</a>
+            <a href="{% url 'resources:index' %}"  class="{% if 'resources'  in request.path %}active{% endif %}">Resources</a>
+        </aside>
+
+        <main class="app-content">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- ═══ LOGIN MODAL ═══ -->
+    {% if not user.is_authenticated %}
+    <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="loginModalTitle">Sign In</h2>
+                <button class="modal-close" onclick="closeModal('loginModal')" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'users:login' %}" id="loginForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <div class="modal-form-group">
+                        <label for="login_username">Username</label>
+                        <input type="text" id="login_username" name="username" required autocomplete="username">
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="login_password">Password</label>
+                        <input type="password" id="login_password" name="password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn-auth" style="width:100%; padding:0.8rem; text-align:center;">Sign In</button>
+                    <div class="modal-footer-link" style="margin-top:0.8rem;">
+                        Don't have an account?
+                        <a href="#" onclick="switchModal('loginModal','registerModal'); return false;">Register here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ REGISTER MODAL ═══ -->
+    <div class="modal-overlay" id="registerModal" role="dialog" aria-modal="true" aria-labelledby="registerModalTitle">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="registerModalTitle">Create Account</h2>
+                <button class="modal-close" onclick="closeModal('registerModal')" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'users:register' %}" id="registerForm">
+                    {% csrf_token %}
+                    <div class="modal-form-group">
+                        <label for="reg_username">Username</label>
+                        <input type="text" id="reg_username" name="username" required autocomplete="username">
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="reg_email">Email</label>
+                        <input type="email" id="reg_email" name="email" required autocomplete="email">
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="reg_password1">Password</label>
+                        <input type="password" id="reg_password1" name="password1" required autocomplete="new-password">
+                        <span class="helptext">Min 8 characters. Not too common.</span>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="reg_password2">Confirm Password</label>
+                        <input type="password" id="reg_password2" name="password2" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn-auth" style="width:100%; padding:0.8rem; text-align:center;">Create Account</button>
+                    <div class="modal-footer-link" style="margin-top:0.8rem;">
+                        Already have an account?
+                        <a href="#" onclick="switchModal('registerModal','loginModal'); return false;">Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function switchModal(closeId, openId) {
+            closeModal(closeId);
+            setTimeout(() => openModal(openId), 150);
+        }
+        // Close on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) closeModal(this.id);
+            });
+        });
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+            }
+        });
+    </script>
+</body>
+</html>

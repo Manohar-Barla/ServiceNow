@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Exam Syllabus - ServiceNow CSA Prep{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>ServiceNow CSA Exam Syllabus</h1>
+    <p>Comprehensive breakdown of exam domains and topics to master.</p>
+</div>
+
+<div class="scroll-box">
+    <div class="card-grid">
+        {% for domain in domains %}
+            <a href="{% url 'syllabus:domain_detail' domain.id %}" class="card">
+                <h3>{{ domain.name }}</h3>
+                <p><strong>Weightage:</strong> {{ domain.weightage }}%</p>
+                <p>{{ domain.description|truncatewords:20 }}</p>
+            </a>
+        {% empty %}
+            <p>No domains available. Please add some from the admin panel.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

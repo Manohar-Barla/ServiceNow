@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - ServiceNow CSA Prep{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Master Your ServiceNow CSA Certification</h1>
+    <p>Comprehensive study materials, practice quizzes, and full-length mock exams designed to help you pass the Certified System Administrator exam with confidence.</p>
+    {% if not user.is_authenticated %}
+        <button onclick="openModal('registerModal')" class="btn-auth" style="border:none;">Get Started for Free</button>
+    {% else %}
+        <a href="{% url 'dashboard:index' %}" class="btn-auth">Go to My Dashboard</a>
+    {% endif %}
+</div>
+
+<div class="scroll-box">
+    <div class="card-grid">
+        <a href="{% url 'syllabus:index' %}" class="card">
+            <h3>Exam Syllabus</h3>
+            <p>Explore all 6 exam domains with detailed topic breakdowns and weightage analysis.</p>
+        </a>
+        <a href="{% url 'practice:index' %}" class="card">
+            <h3>Practice Mode</h3>
+            <p>Test your knowledge with domain-specific MCQ questions and instant feedback.</p>
+        </a>
+        <a href="{% url 'mocktest:index' %}" class="card">
+            <h3>Mock Exams</h3>
+            <p>Simulate the real exam environment with timed tests and randomized question sets.</p>
+        </a>
+        <a href="{% url 'resources:index' %}" class="card">
+            <h3>Study Resources</h3>
+            <p>Download PDF study guides, cheat sheets, and official documentation.</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

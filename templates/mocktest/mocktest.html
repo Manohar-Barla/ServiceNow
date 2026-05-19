@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Mock Test - ServiceNow CSA Prep{% endblock %}
+
+{% block extra_head %}
+<style>
+    .timer-bar {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        background: var(--primary); color: var(--white);
+        padding: 0.5rem 1rem; border-radius: 8px;
+        flex-shrink: 0; margin-bottom: 0.5rem;
+    }
+    .timer-label { font-size: 0.72rem; opacity: 0.8; }
+    .timer-display { font-size: 1.3rem; font-weight: 700; font-family: 'Courier New', monospace; }
+    .timer-urgent { color: #ff6b6b !important; }
+
+    .q-nav {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.6rem; font-size: 0.8rem;
+        color: var(--muted); flex-shrink: 0;
+    }
+    .q-counter { font-weight: 700; color: var(--primary); }
+    .q-progress {
+        flex: 1; height: 4px;
+        background: var(--border); border-radius: 4px;
+        margin: 0 0.8rem; overflow: hidden;
+    }
+    .q-progress-fill {
+        height: 100%; background: var(--accent);
+        border-radius: 4px; transition: width 0.3s;
+    }
+    .nav-btns { display: flex; gap: 0.4rem; }
+    .nav-btn {
+        padding: 0.35rem 0.8rem; border: 1px solid var(--border);
+        border-radius: 5px; background: var(--white);
+        cursor: pointer; font-size: 0.8rem; font-weight: 600;
+        color: var(--primary); transition: all 0.2s;
+    }
+    .nav-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .nav-btn.submit-nav { background: var(--accent); color: var(--primary); border-color: var(--accent); }
+    .nav-btn.submit-nav:hover { background: var(--accent-hover); }
+
+    .question-slide { display: none; }
+    .question-slide.active { display: block; }
+
+    .option-label {
+        display: flex; align-items: center; gap: 0.5rem;
+        padding: 0.55rem 0.8rem; border: 1px solid var(--border);
+        border-radius: 6px; margin-bottom: 0.4rem;
+        cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+    }
+    .option-label:hover { border-color: var(--accent); background: rgba(212,175,55,0.05); }
+    .option-label.selected { border-color: var(--accent); background: rgba(212,175,55,0.1); font-weight: 600; }
+
+    .dot-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; flex-shrink: 0; }
+    .q-dot {
+        width: 28px; height: 28px; border-radius: 50%;
+        border: 2px solid var(--border);
+        cursor: pointer; font-size: 0.85rem;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--white); transition: all 0.2s; font-weight: 600;
+    }
+    .q-dot.answered { background: var(--accent); border-color: var(--accent); color: var(--primary); }
+    .q-dot.current  { border-color: var(--primary); }
+
+    /* Quiz area fills remaining height */
+    .quiz-area {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .quiz-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    .quiz-scroll::-webkit-scrollbar { width: 5px; }
+    .quiz-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+{# ── Timer Bar ── #}
+<div class="timer-bar">
+    <div>
+        <div class="timer-label">Time Remaining</div>
+        <div class="timer-display" id="timer">{{ timer_minutes }}:00</div>
+    </div>
+    <div style="text-align:right; font-size:0.9rem; opacity:0.8;">
+        CSA Mock Exam<br><span id="qTotal">{{ questions|length }}</span> Questions
+    </div>
+</div>
+
+{# ── Question Dots ── #}
+<div class="dot-row" id="dotRow">
+    {% for q in questions %}
+    <div class="q-dot {% if forloop.first %}current{% endif %}" id="dot-{{ forloop.counter0 }}"
+         onclick="goTo({{ forloop.counter0 }})">{{ forloop.counter }}</div>
+    {% endfor %}
+</div>
+
+{# ── Nav Bar ── #}
+<div class="q-nav">
+    <span class="q-counter" id="qCounter">1 / {{ questions|length }}</span>
+    <div class="q-progress"><div class="q-progress-fill" id="qProgress"></div></div>
+    <div class="nav-btns">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592;</button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">&#8594;</button>
+        <button class="nav-btn submit-nav" onclick="confirmSubmit()">Submit &#10003;</button>
+    </div>
+</div>
+
+{# ── Questions (one at a time) ── #}
+<div class="quiz-area">
+<div class="quiz-scroll">
+<form id="quizForm" method="POST" action="{% url 'mocktest:submit' %}"
+      data-total="{{ questions|length }}" data-timer="{{ timer_minutes }}">
+    {% csrf_token %}
+    <input type="hidden" name="exam_type" value="{{ exam_type }}">
+    {% for q in questions %}
+    <input type="hidden" name="question_ids" value="{{ q.id }}">
+    <div class="question-slide {% if forloop.first %}active{% endif %}" id="slide-{{ forloop.counter0 }}">
+        <div class="question-card">
+            <div style="margin-bottom: 0.5rem;">
+                <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ q.topic }}</span>
+                <span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ q.get_question_type_display }}</span>
+            </div>
+            
+            {% if q.question_image %}
+            <div style="margin-bottom: 1rem;">
+                <img src="{{ q.question_image.url }}" style="max-height: 200px; max-width: 100%; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+            {% endif %}
+            
+            <p class="question-text">{{ q.question_text }}</p>
+            
+            <div class="options-grid" id="opts-{{ forloop.counter0 }}">
+                {% if q.question_type == 'SINGLE_CHOICE' %}
+                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
+                        <input type="radio" name="q_{{ q.id }}" value="A"> A. {{ q.option_a }}
+                    </label>
+                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
+                        <input type="radio" name="q_{{ q.id }}" value="B"> B. {{ q.option_b }}
+                    </label>
+                    {% if q.option_c %}
+                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
+                        <input type="radio" name="q_{{ q.id }}" value="C"> C. {{ q.option_c }}
+                    </label>
+                    {% endif %}
+                    {% if q.option_d %}
+                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
+                        <input type="radio" name="q_{{ q.id }}" value="D"> D. {{ q.option_d }}
+                    </label>
+                    {% endif %}
+                    {% if q.option_e %}
+                    <label class="option-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'radio')">
+                        <input type="radio" name="q_{{ q.id }}" value="E"> E. {{ q.option_e }}
+                    </label>
+                    {% endif %}
+                {% else %}
+                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
+                        <input type="checkbox" name="q_{{ q.id }}" value="A"> A. {{ q.option_a }}
+                    </label>
+                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
+                        <input type="checkbox" name="q_{{ q.id }}" value="B"> B. {{ q.option_b }}
+                    </label>
+                    {% if q.option_c %}
+                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
+                        <input type="checkbox" name="q_{{ q.id }}" value="C"> C. {{ q.option_c }}
+                    </label>
+                    {% endif %}
+                    {% if q.option_d %}
+                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
+                        <input type="checkbox" name="q_{{ q.id }}" value="D"> D. {{ q.option_d }}
+                    </label>
+                    {% endif %}
+                    {% if q.option_e %}
+                    <label class="option-label checkbox-label" onclick="markAnswered({{ forloop.counter0 }}, this, 'checkbox')">
+                        <input type="checkbox" name="q_{{ q.id }}" value="E"> E. {{ q.option_e }}
+                    </label>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const quizForm = document.getElementById('quizForm');
+const total     = parseInt(quizForm.dataset.total, 10);
+const timerMins = parseInt(quizForm.dataset.timer, 10);
+let current  = 0;
+const answered = new Set();
+
+// Set initial progress
+document.getElementById('qProgress').style.width = (1 / total * 100) + '%';
+
+function goTo(idx) {
+    document.getElementById('slide-' + current).classList.remove('active');
+    document.getElementById('dot-' + current).classList.remove('current');
+    current = idx;
+    document.getElementById('slide-' + current).classList.add('active');
+    document.getElementById('dot-' + current).classList.add('current');
+    document.getElementById('qCounter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('qProgress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+}
+
+function navigate(dir) { goTo(Math.max(0, Math.min(total - 1, current + dir))); }
+
+function markAnswered(idx, label, type) {
+    const grid = label.parentElement;
+    
+    if (type === 'radio') {
+        grid.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+        label.classList.add('selected');
+        answered.add(idx);
+        document.getElementById('dot-' + idx).classList.add('answered');
+    } else {
+        // Checkbox logic
+        const input = label.querySelector('input');
+        // The click event is tricky. We need to sync class with input.checked state.
+        // Prevent default click handling delay by relying on actual change event 
+        // but since we are handling onclick on the label:
+        setTimeout(() => {
+            if (input.checked) {
+                label.classList.add('selected');
+            } else {
+                label.classList.remove('selected');
+            }
+            
+            // Check if ANY checkbox is selected
+            const anyChecked = Array.from(grid.querySelectorAll('input')).some(i => i.checked);
+            if (anyChecked) {
+                answered.add(idx);
+                document.getElementById('dot-' + idx).classList.add('answered');
+            } else {
+                answered.delete(idx);
+                document.getElementById('dot-' + idx).classList.remove('answered');
+            }
+        }, 10);
+    }
+}
+
+function confirmSubmit() {
+    const unanswered = total - answered.size;
+    if (unanswered > 0) {
+        if (!confirm(unanswered + ' question(s) unanswered. Submit anyway?')) return;
+    }
+    quizForm.submit();
+}
+
+// ── Countdown Timer ──
+let timeLeft = timerMins * 60;
+const timerEl = document.getElementById('timer');
+const countdown = setInterval(() => {
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    if (timeLeft <= 60)  timerEl.classList.add('timer-urgent');
+    if (timeLeft <= 0)   { clearInterval(countdown); quizForm.submit(); }
+    timeLeft--;
+}, 1000);
+</script>
+{% endblock %}
